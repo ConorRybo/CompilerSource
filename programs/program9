@@ -1,0 +1,15 @@
+program prog9 is
+
+begin
+	for i in 1..5
+	loop
+        exit when i > 3;
+        for j in 1..5
+        loop
+            write "(", i, ", ", j, ")   ";
+            exit when j >= 3;
+        end loop;
+        writeln;
+	end loop;
+	writeln;
+end prog9;

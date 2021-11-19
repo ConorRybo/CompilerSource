@@ -1,0 +1,23 @@
+program prog4 is
+	number, count, total, average : integer;
+	procedure newNumber(n: value integer) is
+	begin
+		count := count + 1;
+		total := total + n;
+	end;
+begin
+	count := 0;
+	total := 0;
+	loop
+		write "Enter a number, 0 to exit: ";
+		read number ;
+		exit when number = 0;
+		newNumber(number);
+	end loop;
+	writeln "Count is " & int2string(count);
+	writeln "Total is " & int2string(total);
+	if count <> 0 then
+		average := total / count;
+		writeln "Average is " & int2string(average);
+	end if;
+end;

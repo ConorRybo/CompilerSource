@@ -1,0 +1,20 @@
+program prog8 is
+    i, j: integer;
+
+begin
+    i := 0;
+	while i<5
+    loop
+        j := 0;
+        while j<5
+        loop
+            write "(", int2string(i) & ", " & int2string(j) & ")   ";
+            exit when j >= 3;
+            j := j + 1;
+        end loop;
+        writeln;
+        exit when i >= 3;
+        i := i + 1;
+    end loop;
+    writeln;
+end prog8;

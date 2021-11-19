@@ -1,0 +1,9 @@
+program prog1 is
+	x, y, z : integer ;
+begin
+	write "Enter 2 numbers: ";
+	read x, y;
+	write "Their sum is: ";
+	z := x + y;
+	writeln int2string(z);
+end ;

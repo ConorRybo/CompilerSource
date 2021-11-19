@@ -1,0 +1,12 @@
+program prog23 is
+	number, newNumber: integer;
+	procedure addten(n1: value integer; n2: ref integer) is
+	begin
+		n2 := n1 + 10;
+	end;
+begin
+	write ("Enter a number: ");
+	read (number);
+	addten(number,newNumber);
+	writeln ("Number doubled is " & int2string(newNumber));
+end;

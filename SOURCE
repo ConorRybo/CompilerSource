@@ -1,0 +1,101 @@
+		"This is a string"
+		"This is a ""string"""
+		12.34
+		12.34E+2
+		12.34E-2
+		12.34E2
+		1234
+		1234E2
+		123E-2
+		;
+		,
+		:
+		=
+		<>
+		<
+		<=
+		>
+		>=
+		+
+		-
+		-2
+		/
+		*
+		**
+		(
+		)
+		..
+		:=
+		and
+		begin
+		boolean
+		constant
+		else
+		elsif
+		end
+		eof
+		exit
+		false
+		for
+		function
+		if
+		in
+		integer
+		is
+		loop
+		not
+		null
+		odd
+		or
+		procedure
+		program
+		read
+		real
+		ref
+		return
+		reverse
+		string
+		then
+		true
+		value
+		when
+		write
+		writeln
+		while
+		
+		pragma trace(on);
+		
+		identifier
+		identifier_1
+		
+		ERRORS
+		ident_
+		ident__ifier
+		"malformed string
+		"malformed "" string
+		
+		
+		-- This is a comment
+		-- it shoudl be ignored
+		
+program prog5 is
+	number, dNumber, qNumber : integer;
+	procedure double( n1 : value integer; n2 : ref integer ) is
+	begin
+		n2 := n1 + n1
+	end;
+	procedure quadruple( n1 : value integer; n2 : ref integer ) is
+		n : integer;
+	begin
+		double( n1, n );
+		double( n, n );
+		n2 := n;
+	end;
+begin
+	read number;
+	double( number, dNumber );
+	quadruple( number, qNumber );
+	write to_string(number) & to_string(dnumber) & to_string(qNumber);
+end;
+		
+		

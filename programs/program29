@@ -1,0 +1,16 @@
+-- program29 should result in 8 errors
+program prog29 is
+
+begin
+	for  in 1..5 -- 1 errors because of lack if identifier (i)
+	loop
+        eit when i > 3; -- 7 errors because of exit typo
+        for j in 1..5
+        loop
+            write "(", i, ", ", j, ")   ";
+            exit when j >= 3;
+        end loop;
+        writeln;
+	end loop;
+	writeln;
+end prog29;

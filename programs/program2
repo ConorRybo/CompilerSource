@@ -1,0 +1,15 @@
+program prog2 is
+	number : integer;
+	procedure double(n: value integer ) is
+		n2: integer;
+	begin
+		n2 := n + n;
+		write (int2string(n2));
+	end;
+begin
+	write "Enter a number: ";
+	read number;
+	write "The number doubled is: ";
+	double(number);
+	writeln ".";
+end;

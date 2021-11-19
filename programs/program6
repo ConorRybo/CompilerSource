@@ -1,0 +1,17 @@
+program prog6 is
+
+begin
+	writeln "In ascending order: ";
+	for i in 1..5
+	loop
+		write int2string(i) & " ";
+	end loop;
+	writeln;
+	writeln "In descending order: ";
+	for i in reverse 1..5
+	loop
+		write int2string(i) & " ";
+	end loop;
+	writeln;
+end prog6;
+

@@ -1,0 +1,11 @@
+program prog16 is
+	a, b, c: integer;
+begin
+	a := 5;
+	b :=10;
+	c := a + b;
+	write "C will be equal to: ";
+	writeln(c);
+end ;
+	
+		

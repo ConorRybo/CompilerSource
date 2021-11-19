@@ -1,0 +1,15 @@
+program prog22 is
+	number : real;
+	procedure double(n: value integer ) is
+		n2: real;
+	begin
+		n2 := n - n;
+		write (real2string(n2));
+	end;
+begin
+	write "Enter a number: ";
+	read number;
+	write "The number doubled is: ";
+	double(number);
+	writeln ".";
+end;

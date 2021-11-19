@@ -1,0 +1,25 @@
+program prog5 is
+	number, dNumber, qNumber: integer;
+
+	procedure double(n1: value integer; n2: ref integer) is
+	begin
+		n2 := n1 + n1;
+	end double;
+
+	procedure quadruple(n1: value integer; n2: ref integer) is
+		n: integer;
+	begin
+		double(n1, n);
+		double(n, n);
+		n2 := n;
+	end quadruple;
+
+begin
+	write ("Enter a number: ");
+	read (number);
+	double(number, dNumber);
+	quadruple(number, qNumber);
+	writeln;	-- Leave an empty line
+	writeln (int2string(number), "  ", int2string(dnumber), "  ", int2string(qNumber));
+end prog5;
+

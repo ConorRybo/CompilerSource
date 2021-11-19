@@ -1,0 +1,12 @@
+program prog3 is
+	number, newNumber: integer;
+	procedure double(n1: value integer; n2: ref integer) is
+	begin
+		n2 := n1 + n1;
+	end;
+begin
+	write ("Enter a number: ");
+	read (number);
+	double(number,newNumber);
+	writeln ("Number doubled is " & int2string(newNumber));
+end;

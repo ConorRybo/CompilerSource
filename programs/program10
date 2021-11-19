@@ -1,0 +1,14 @@
+program prog10 is
+
+    function double (n1: value integer) return integer is
+    begin
+        return n1 + n1;
+    end;
+
+
+begin
+	for i in 1..5
+	loop
+        writeln i, "  ", double(i);
+	end loop;
+end prog10;

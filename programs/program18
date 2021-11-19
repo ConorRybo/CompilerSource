@@ -1,0 +1,12 @@
+program prog18 is
+	x,y,z: integer;
+begin
+	y := 0;
+	z := 0;
+	write ("please tell how many loops");
+	read (x);
+	for z in y..x
+	loop
+		write("looped this many times: " & int2string(z));
+	end loop;
+end prog8;  
