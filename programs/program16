@@ -7,4 +7,3 @@ begin
 	write "C will be equal to: ";
 	writeln(c);
 end prog16;
-	
