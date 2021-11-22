@@ -576,7 +576,7 @@ void scanner::scan_digit()
 		// number type logic sequence
 		get_char();
 		if (isdigit(next_char) == false)
-		{
+		{ // if the following digit isn't a number
 			if (next_char == '.' && (eflag == false))
 			{ // if there is a decimal
 				if (isdigit(following_char()) && realf == false)
@@ -589,7 +589,9 @@ void scanner::scan_digit()
 					get_char();
 				}
 				else
-				{
+				{ // there is a malformed float
+					error->flag(current_line_number, current_pos_on_line, 66);
+					get_char();
 					lcv = false;
 				}
 			}
@@ -641,6 +643,7 @@ void scanner::scan_digit()
 			}
 		}
 	}
+
 	if (realf)
 	{ // if real number than make the current symbol real_num
 		if (eflag)
