@@ -51,6 +51,7 @@ void parser::PROG()
     scan->must_be(symbol::is_sym);     // looking for the is symbol
     BLOCK(ident_name);                 // call block and pass the name of the proc
     scan->must_be(symbol::semicolon_sym);
+    scan->must_be(symbol::eof_sym); // catches any trash after program ends
 }
 
 void parser::BLOCK(string bName)

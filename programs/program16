@@ -6,6 +6,6 @@ begin
 	c := a + b;
 	write "C will be equal to: ";
 	writeln(c);
-end ;
+end prog16;
 	
 		
