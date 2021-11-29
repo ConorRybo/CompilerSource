@@ -13,16 +13,18 @@
 
 #include "token.h"
 #include "error_handler.h"
+#include "id_table_entry.h"
 
 using namespace std;
 
-class id_table {
+class id_table
+{
 private:
-	error_handler* error;
+    error_handler *error;
 
 public:
-    id_table(error_handler* err);
-    
+    id_table(error_handler *err);
+
     void dump_id_table(bool dump_all = true);
 };
 
