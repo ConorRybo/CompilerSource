@@ -47,6 +47,21 @@ id_table_entry::id_table_entry(token *id,
     r_ty_entry = return_tipe;
 }
 
+lille_kind id_table_entry::kind() // retrun specidied -- continue down
+{
+    return kind_entry;
+}
+
+lille_type id_table_entry::tipe()
+{
+    return type_entry;
+}
+
+token *id_table_entry::token_value()
+{
+    return id_entry;
+}
+
 void id_table_entry::add_param(id_table_entry *param_entry) // how do we handle function or procedure parameters?
 {
 }

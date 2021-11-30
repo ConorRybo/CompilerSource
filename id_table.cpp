@@ -13,6 +13,7 @@
 #include "token.h"
 #include "error_handler.h"
 #include "id_table.h"
+#include "id_table_entry.h"
 
 using namespace std;
 
@@ -35,6 +36,8 @@ id_table::id_table(error_handler* err)
 {
     error = err;
     // INSERT CODE HERE
+	root = NULL;
+	scope_man.clear();
 }
 
 

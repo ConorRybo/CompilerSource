@@ -38,6 +38,18 @@ public:
                    lille_type typ = lille_type::type_unknown,
                    lille_kind kind = lille_kind::unknown,
                    lille_type return_tipe = lille_type::type_unknown);
+    lille_kind kind(); // returns the kind of the desired entry
+    lille_type tipe(); // returns the type of the desired entry
+    token *token_value(); // returns the current token
+    int integer_value();
+    float real_value();
+    bool bool_value(); 
+    string string_value();
+    lille_type return_tipe();
+    void fix_const(int integer_value = 0,
+                   float real_value = 0, 
+                   string string_value = "",
+                   bool bool_value = false);
     void add_param(id_table_entry *param_entry);
     void fix_return_type(lille_type new_ret);
 };
