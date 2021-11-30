@@ -62,6 +62,26 @@ token *id_table_entry::token_value()
     return id_entry;
 }
 
+int id_table_entry::integer_value()
+{
+    return i_val_entry;
+}
+
+float id_table_entry::real_value()
+{
+    return r_val_entry;
+}
+
+bool id_table_entry::bool_value()
+{
+    return b_val_entry;
+}
+
+lille_type id_table_entry::return_tipe()
+{
+    return r_ty_entry;
+}
+
 void id_table_entry::add_param(id_table_entry *param_entry) // how do we handle function or procedure parameters?
 {
 }
