@@ -56,20 +56,48 @@ void id_table::exit_scope()
 // search tree algoritbm for the node
 id_table::node *id_table::search_tree(string s, node *p)
 {
-	
+}
+
+id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
+{
+	// the base case: if the root is null then insert at that node
+	if (p == NULL)
+	{
+		add_table_entry(idt_entry, p); // add the actual entry to the node
+		return p;					   // return a pointer to the new node
+	}
+
+	// compare current key to node keys
+	if (idt_entry->token_value()->get_identifier_value() > p->entry_info->token_value()->get_identifier_value())
+	{
+		// if the value is greater then we go to the right node
+		p->right = insert(idt_entry, p->right);
+	}
+	else
+	{
+		// if it is less then we go to the left side
+		p->left = insert(idt_entry, p->left);
+	}
+
+	// after an insertion return the root
+	return p;
 }
 
 // first of the overloaded two
-void add_table_entry(id_table_entry *idt, id_table::node *p)
+void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 {
-	// im guessing p is a pointer to the head node at the appropriate scope level
-	// most likely will be passed as scope_man[x] type of thing
-	// the key is the identifier value
-	string key = idt->token_value()->get_identifier_value();
-	// check the base case
-	if (p == NULL)
-	{
-	}
+	// my interpretation is that p is a pointer to a node that
+	// the new leaf is being added
+
+	// create a new leaf with the entry
+	node *leaf;
+	leaf = new node;
+	leaf->left = NULL;
+	leaf->right = NULL;
+	leaf->entry_info = idt_entry;
+
+	// point to the new leaf now
+	p = leaf;
 }
 
 void id_table::dump_id_table(bool dump_all)
