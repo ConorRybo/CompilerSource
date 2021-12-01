@@ -18,7 +18,7 @@ using namespace std;
 
 id_table_entry::id_table_entry() // default constructor should set everything to NULL
 {
-    id_entry = NULL;
+    id_token = NULL;
     kind_entry = lille_kind::unknown;      // the kind of the entry variable, (constant, value_param, ref_param, for_ident, unknown)
     type_entry = lille_type::type_unknown; // the type of the entrty
     i_val_entry = NULL;                    // if it is an integer store its value here
@@ -35,7 +35,7 @@ id_table_entry::id_table_entry(token *id,
                                lille_kind kind = lille_kind::unknown,
                                lille_type return_tipe = lille_type::type_unknown) // parameterized constructor with appropriate defaults
 {
-    id_entry = id;
+    id_token = id;
     kind_entry = kind;
     type_entry = typ;
     i_val_entry = NULL; // if it is an integer store its value here
@@ -88,4 +88,5 @@ void id_table_entry::add_param(id_table_entry *param_entry) // how do we handle 
 
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type
 {
+    r_ty_entry = new_ret;
 }

@@ -48,8 +48,27 @@ void id_table::enter_new_scope()
 void id_table::exit_scope()
 {
 	// when exiting what really only needs to be done?
-	scope_man.pop_back(); // remove the last element (leave that scope)
-	scope_lvl--;		  // keep track of the scope
+	scope_man[scope_lvl] = NULL; // just to be sure set the root pointer to null
+	scope_man.pop_back();		 // remove the last element (leave that scope)
+	scope_lvl--;				 // keep track of the scope
+}
+
+// search tree algoritbm for the node
+id_table::node *id_table::search_tree(string s, node *p)
+{
+}
+
+// first of the overloaded two
+void add_table_entry(id_table_entry *idt, id_table::node *p)
+{
+	// im guessing p is a pointer to the head node at the appropriate scope level
+	// most likely will be passed as scope_man[x] type of thing
+	// the key is the identifier value
+	string key = idt->token_value()->get_identifier_value();
+	// check the base case
+	if (p == NULL)
+	{
+	}
 }
 
 void id_table::dump_id_table(bool dump_all)

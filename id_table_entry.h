@@ -21,7 +21,7 @@ using namespace std;
 class id_table_entry
 {
 private:
-    token *id_entry;
+    token *id_token;
     lille_kind kind_entry; // the kind of the entry variable, (constant, value_param, ref_param, for_ident, unknown)
     lille_type type_entry; // the type of the entrty
     int i_val_entry;       // if it is an integer store its value here
@@ -38,16 +38,16 @@ public:
                    lille_type typ = lille_type::type_unknown,
                    lille_kind kind = lille_kind::unknown,
                    lille_type return_tipe = lille_type::type_unknown);
-    lille_kind kind(); // returns the kind of the desired entry
-    lille_type tipe(); // returns the type of the desired entry
+    lille_kind kind();    // returns the kind of the desired entry
+    lille_type tipe();    // returns the type of the desired entry
     token *token_value(); // returns the current token
     int integer_value();
     float real_value();
-    bool bool_value(); 
+    bool bool_value();
     string string_value();
     lille_type return_tipe();
     void fix_const(int integer_value = 0,
-                   float real_value = 0, 
+                   float real_value = 0,
                    string string_value = "",
                    bool bool_value = false);
     void add_param(id_table_entry *param_entry);
