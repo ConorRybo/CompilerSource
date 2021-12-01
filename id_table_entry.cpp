@@ -59,7 +59,7 @@ lille_type id_table_entry::tipe()
 
 token *id_table_entry::token_value()
 {
-    return id_entry;
+    return id_token;
 }
 
 int id_table_entry::integer_value()
@@ -81,6 +81,13 @@ lille_type id_table_entry::return_tipe()
 {
     return r_ty_entry;
 }
+
+void id_table_entry::fix_const(int integer_value = 0,
+                   float real_value = 0,
+                   string string_value = "",
+                   bool bool_value = false){
+                       
+                   }
 
 void id_table_entry::add_param(id_table_entry *param_entry) // how do we handle function or procedure parameters?
 {

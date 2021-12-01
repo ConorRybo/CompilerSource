@@ -56,6 +56,7 @@ void id_table::exit_scope()
 // search tree algoritbm for the node
 id_table::node *id_table::search_tree(string s, node *p)
 {
+	
 }
 
 // first of the overloaded two
