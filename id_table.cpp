@@ -56,6 +56,26 @@ void id_table::exit_scope()
 // search tree algoritbm for the node
 id_table::node *id_table::search_tree(string s, node *p)
 {
+	// if there isnt a matching entry then return null
+	if (p == NULL)
+	{
+		return NULL;
+	}
+	// check for a match
+	if (p->entry_info->token_value()->get_identifier_value() == s)
+	{
+		return p;
+	}
+
+	// if the desired is less than current node then search left
+	if (p->entry_info->token_value()->get_identifier_value() > s)
+	{
+		search_tree(s, p->left);
+	}
+	else // look to the right node
+	{
+		search_tree(s, p->right);
+	}
 }
 
 id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
