@@ -34,7 +34,6 @@ id_table::id_table(error_handler *err)
 {
 	// initialize to defaults or passed vals
 	error = err;
-	root = NULL;
 	scope_man.clear();
 	scope_lvl = 0;
 }
@@ -51,38 +50,6 @@ void id_table::exit_scope()
 	// when exiting what really only needs to be done?
 	scope_man.pop_back(); // remove the last element (leave that scope)
 	scope_lvl--;		  // keep track of the scope
-}
-
-// INSERT IS ONLY CALLED WHEN WE KNOW WE NEED TO INSERT
-// INITIAL SEARCH IS DONE IN THE LOOK_UP to varify if its there
-// maybe have this return the inserted ident so we can keep track
-node *id_table::insert_ident(node *node, token *id_token) // if we need to fixup vals in the future?
-{
-	// this is the logic for the insertion of a node into a binary search tree
-	if (node == NULL) // if its empty create node and put it there
-		return new_node(id_token);
-
-	if (id_token->get_identifier_value() < node->ident_key)
-	{
-		node->left = insert_ident(node->left, id_token);
-	}
-	else if (id_token->get_identifier_value() > node->ident_key)
-	{
-		node->right = insert_ident(node->right, id_token);
-	}
-
-	return node;
-}
-
-node *id_table::new_node(token *id_token)
-{
-	id_table_entry *idt_new;				// new entry into table so get entry ready
-	idt_new = new id_table_entry(id_token); // pass id token to entry to initialize
-	node *temp = new node;					// create a temp node
-	temp->ident_key = id_token->get_identifier_value();
-	temp->entry_info = idt_new;
-	temp->left = temp->right = NULL;
-	return temp;
 }
 
 void id_table::dump_id_table(bool dump_all)

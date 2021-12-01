@@ -18,31 +18,32 @@
 
 using namespace std;
 
-struct node
-{
-    string ident_key;           // the key for the search is the identifier value
-    node *left;                 // left node
-    node *right;                // right node
-    id_table_entry *entry_info; // holds all the information about table entry
-};
-
 class id_table
 {
 private:
+    struct node
+    {
+        node *left;                 // left node
+        node *right;                // right node
+        id_table_entry *entry_info; // holds all the information about table entry
+    };
+
     error_handler *error;
-    node *root;               // this is the starting node for the tree
     vector<node *> scope_man; // where we will manage the scope levels
-    int scope_lvl;
+    int scope_lvl;            // holds the current scope level
+
+    node *search_tree(string s, node *p);               // method to search a tree in level order
+    void add_table_entry(id_table_entry *idt, node *p); // method to add an entry to the tree
 
 public:
     id_table(error_handler *err);
-    node *new_node(token *id_token);                 // creates a new node to be added to the tree
-    node *insert_ident(node *node, token *id_token); // insert a node into the tree
-    void enter_new_scope();                          // called when we are entering a new region of scope
-    void exit_scope();                               // when we are exiting a level of scope
-                                                     // what must be done on the exit?
-    void lookup();                                   // our search method to find out if the
-                                                     // identifier is located in the tree
+    void enter_new_scope(); // called when we are entering a new region of scope
+    void exit_scope();      // when we are exiting a level of scope
+                            // what must be done on the exit?
+    int scope();            // return the level of scope
+    void lookup();          // our search method to find out if the
+                            // identifier is located in the tree
+    string get_ident();     // get the identifer name (string value)
     void dump_id_table(bool dump_all = true);
 };
 
