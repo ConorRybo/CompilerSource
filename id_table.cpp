@@ -121,7 +121,7 @@ void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 void id_table::add_table_entry(id_table_entry *idt_entry)
 {
 	// call insert, passing the idt entry and the current scope to tree pointer
-	insert(idt_entry, sym_table[scope_lvl]);
+	sym_table[scope_lvl] = insert(idt_entry, sym_table[scope_lvl]);
 }
 
 // perform a lookup of the datastructer with just a string (identifier => key)
@@ -159,13 +159,17 @@ id_table_entry *id_table::lookup(token *tok)
 void id_table::dump_tree(node *ptr)
 {
 	// prt is a pointer to the head node of the tree
-	if (ptr != NULL)
+	if (!ptr)
 	{
-		dump_tree(ptr->left); // always start with left bc that is the least
-		cout << "ident name: " << ptr->entry_info->token_value()->get_identifier_value() << endl;
-		cout << "value: " << ptr->entry_info->to_string() << endl;
-		dump_tree(ptr->right);
+		return;
 	}
+
+	dump_tree(ptr->left); // always start with left bc that is the least
+	cout << "ident name: " << ptr->entry_info->token_value()->get_identifier_value() << endl;
+	cout << "kind: " << ptr->entry_info->kind().to_string() << endl;
+	cout << "type: " << ptr->entry_info->tipe().to_string() << endl;
+	cout << "value: " << ptr->entry_info->to_string() << endl;
+	dump_tree(ptr->right);
 }
 
 // this is the main adding function to handle the adding

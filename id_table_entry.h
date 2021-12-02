@@ -53,6 +53,9 @@ public:
     void add_param(id_table_entry *param_entry);
     void fix_return_type(lille_type new_ret);
     int number_of_params();
+    // if there is an identifier list then we
+    // must fix all the types of the ones after we enter them
+    void fix_type(lille_type ident_type);
     string to_string();
 };
 #endif

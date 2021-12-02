@@ -92,6 +92,9 @@ void id_table_entry::fix_const(int integer_value,
                                string string_value,
                                bool bool_value)
 {
+    // make sure that the kind entry is set to constant
+    kind_entry = lille_kind::constant;
+
     if (type_entry.is_type(lille_type::type_integer))
     {
         i_val_entry = integer_value;
@@ -166,6 +169,12 @@ string id_table_entry::to_string()
         }
     }
     return "unknown";
+}
+
+// fix up to fix up the types (and vals if constants) of a list of identifiers
+void id_table_entry::fix_type(lille_type ident_type)
+{
+    type_entry = ident_type;
 }
 
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type
