@@ -49,8 +49,10 @@ public:
     void fix_const(int integer_value = 0,
                    float real_value = 0,
                    string string_value = "",
-                   bool bool_value = false);
+                   bool bool_value = false); // fixes the value of a constant after entry
     void add_param(id_table_entry *param_entry);
     void fix_return_type(lille_type new_ret);
+    int number_of_params();
+    string to_string();
 };
 #endif

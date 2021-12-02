@@ -107,7 +107,7 @@ id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 {
 	// my interpretation is that p is a pointer to a node that
-	// the new leaf is being added
+	// the new leaf is being added at
 
 	// create a new leaf with the entry
 	node *leaf;

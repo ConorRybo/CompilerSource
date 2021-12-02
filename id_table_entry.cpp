@@ -82,15 +82,89 @@ lille_type id_table_entry::return_tipe()
     return r_ty_entry;
 }
 
+int id_table_entry::number_of_params()
+{
+    return n_par_entry;
+}
+
 void id_table_entry::fix_const(int integer_value = 0,
-                   float real_value = 0,
-                   string string_value = "",
-                   bool bool_value = false){
-                       
-                   }
+                               float real_value = 0,
+                               string string_value = "",
+                               bool bool_value = false)
+{
+    if (type_entry.is_type(lille_type::type_integer))
+    {
+        i_val_entry = integer_value;
+    }
+    else if (type_entry.is_type(lille_type::type_real))
+    {
+        r_val_entry = real_value;
+    }
+    else if (type_entry.is_type(lille_type::type_string))
+    {
+        s_val_entry = string_value;
+    }
+    else if (type_entry.is_type(lille_type::type_boolean))
+    {
+        b_val_entry = bool_value;
+    }
+}
 
 void id_table_entry::add_param(id_table_entry *param_entry) // how do we handle function or procedure parameters?
 {
+    if (type_entry.is_type(lille_type::type_proc) || type_entry.is_type(lille_type::type_func))
+    {
+        id_table_entry *p = this->p_list_entry; // get pointer to the current parameter list
+        id_table_entry *q;                      // needed to look through parameter list
+
+        if (p == NULL) // if there are no parameters than just point to the parameter entry
+        {
+            this->p_list_entry = param_entry;
+        }
+        else // if theres a parameter in the spot, get it, then check its parameter spot
+        {
+            while (p != NULL)
+            {                        // check all things in parameter list until there is a spot
+                q = p;               // swap the pointer to an entry
+                p = p->p_list_entry; // get the param list ent of next entry (if it exists)
+            }
+            // if the past node points to a null then enter the
+            q->p_list_entry = param_entry; // pointer to the next parameter in its param spot
+        }
+        n_par_entry++; // increment the count of parameters
+    }
+    else
+    {
+        throw lille_exception("Internal compiler error - trying to add parameters to something other than a procedure or function.");
+    }
+}
+
+// returns the value of the entry (based on its type) as a string
+string id_table_entry::to_string()
+{
+    if (type_entry.is_type(lille_type::type_integer)) // int
+    {
+        return std::to_string(i_val_entry);
+    }
+    else if (type_entry.is_type(lille_type::type_real)) // real
+    {
+        return std::to_string(r_val_entry);
+    }
+    else if (type_entry.is_type(lille_type::type_string)) // string
+    {
+        return s_val_entry;
+    }
+    else if (type_entry.is_type(lille_type::type_boolean)) // if its a bool check val then return
+    {
+        if (b_val_entry)
+        {
+            return "True";
+        }
+        else
+        {
+            return "False";
+        }
+    }
 }
 
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type
