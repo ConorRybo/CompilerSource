@@ -80,7 +80,7 @@ id_table::node *id_table::search_tree(string s, node *p)
 
 id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 {
-	// the base case: if the root is null then insert at that node
+	// the exit case: if the root is null then insert at that node
 	if (p == NULL)
 	{
 		add_table_entry(idt_entry, p); // add the actual entry to the node
@@ -100,6 +100,7 @@ id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 	}
 
 	// after an insertion return the root
+	// this is how we "back out" of the recurison
 	return p;
 }
 
@@ -120,20 +121,70 @@ void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 	p = leaf;
 }
 
+// perform a lookup of the datastructer with just a string (identifier => key)
+id_table_entry *id_table::lookup(string s)
+{
+	// we want to make sure that we start at the current scope level and then work backwards
+	int lscop = scope_lvl; // keep a local v so we can decrement
+	// create a result node and run the search on the current level of scope we are at
+	node *result = search_tree(s, scope_man[lscop]);
+	lscop--;
+	while (result == NULL && lscop >= 0) // if and while there is nothing found
+	{
+		result = search_tree(s, scope_man[lscop]);
+	}
+
+	if (result == NULL)
+	{				 // if it gets to the end and result is still NULL
+		return NULL; // return the null value
+	}
+	else
+	{
+		return result->entry_info; // return the entry of the node
+	}
+}
+
+// lookup function if its passed a token
+id_table_entry *id_table::lookup(token *tok)
+{
+	// get the identifier value (string, key to search)
+	string key = tok->get_identifier_value();
+	return lookup(key); // just call the version that takes the string arg
+}
+
+// method to dump only the contents of a single tree
+void id_table::dump_tree(node *ptr)
+{
+	// prt is a pointer to the head node of the tree
+	if (ptr != NULL)
+	{
+		dump_tree(ptr->left); // always start with left bc that is the least
+		cout << "ident name: " << ptr->entry_info->token_value()->get_identifier_value() << endl;
+		cout << "value: " << ptr->entry_info->to_string() << endl;
+		dump_tree(ptr->right);
+	}
+}
+
 void id_table::dump_id_table(bool dump_all)
 {
 	if (!dump_all)
 	{
 		cout << "Dump of idtable for current scope only." << endl;
 		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-
-		// INSERT CODE HERE
+		cout << "current scope level: " << scope_lvl << endl;
+		dump_tree(scope_man[scope_lvl]); // just dump at the current scope level
 	}
 	else
 	{
 		cout << "Dump of the entire symbol table." << endl;
 		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-
-		// INSERT CODE HERE
+		int scolev = scope_lvl;
+		while (scolev >= 0) // dump all the scope levels
+		{
+			cout << endl;
+			cout << "current scope level: " << scolev << endl;
+			dump_tree(scope_man[scolev]); // dump the tree at the current level
+			scolev--;					  // move up a level and then print it
+		}
 	}
 }
