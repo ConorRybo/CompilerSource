@@ -126,9 +126,13 @@ void parser::PROG()
         id_table_entry *run = idTable->enter_id(scan->this_token());
     }
     scan->must_be(symbol::identifier); // if it isn't an identifier throw err
-    scan->must_be(symbol::is_sym);     // looking for the is symbol
-    BLOCK(ident_name);                 // call block and pass the name of the proc
+    idTable->enter_new_scope();        // now we are entering the program so we change scope
+    idTable->dump_id_table(true);
+    scan->must_be(symbol::is_sym); // looking for the is symbol
+    BLOCK(ident_name);             // call block and pass the name of the proc
     scan->must_be(symbol::semicolon_sym);
+    idTable->exit_scope();
+    idTable->dump_id_table(true);
     scan->must_be(symbol::end_of_program); // catches any trash after program
 }
 

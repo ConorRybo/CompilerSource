@@ -15,6 +15,8 @@
 #include "token.h"
 #include "error_handler.h"
 #include "id_table_entry.h"
+#include "lille_type.h"
+#include "lille_kind.h"
 
 using namespace std;
 
