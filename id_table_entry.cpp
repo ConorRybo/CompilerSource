@@ -21,27 +21,27 @@ id_table_entry::id_table_entry() // default constructor should set everything to
     id_token = NULL;
     kind_entry = lille_kind::unknown;      // the kind of the entry variable, (constant, value_param, ref_param, for_ident, unknown)
     type_entry = lille_type::type_unknown; // the type of the entrty
-    i_val_entry = NULL;                    // if it is an integer store its value here
-    r_val_entry = NULL;                    // only storing info where appropriate, maintain NULL in all the others
+    i_val_entry = 0;                       // if it is an integer store its value here
+    r_val_entry = 0.0;                     // only storing info where appropriate, maintain NULL in all the others
     s_val_entry = "";
-    b_val_entry = NULL;
+    b_val_entry = false;
     p_list_entry = NULL; // points to the head paramenter
     n_par_entry = 0;     // the number of parameters
     r_ty_entry = lille_type::type_unknown;
 }
 
 id_table_entry::id_table_entry(token *id,
-                               lille_type typ = lille_type::type_unknown,
-                               lille_kind kind = lille_kind::unknown,
-                               lille_type return_tipe = lille_type::type_unknown) // parameterized constructor with appropriate defaults
+                               lille_type typ,
+                               lille_kind kind,
+                               lille_type return_tipe) // parameterized constructor with appropriate defaults
 {
     id_token = id;
     kind_entry = kind;
     type_entry = typ;
-    i_val_entry = NULL; // if it is an integer store its value here
-    r_val_entry = NULL; // only storing info where appropriate, maintain NULL in all the others, only for CONSTANTS
+    i_val_entry = 0;   // if it is an integer store its value here
+    r_val_entry = 0.0; // only storing info where appropriate, maintain NULL in all the others, only for CONSTANTS
     s_val_entry = "";
-    b_val_entry = NULL;
+    b_val_entry = false;
     p_list_entry = NULL; // points to the head paramenter
     n_par_entry = 0;     // the number of parameters
     r_ty_entry = return_tipe;
@@ -87,10 +87,10 @@ int id_table_entry::number_of_params()
     return n_par_entry;
 }
 
-void id_table_entry::fix_const(int integer_value = 0,
-                               float real_value = 0,
-                               string string_value = "",
-                               bool bool_value = false)
+void id_table_entry::fix_const(int integer_value,
+                               float real_value,
+                               string string_value,
+                               bool bool_value)
 {
     if (type_entry.is_type(lille_type::type_integer))
     {
@@ -165,6 +165,7 @@ string id_table_entry::to_string()
             return "False";
         }
     }
+    return "no type match";
 }
 
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type

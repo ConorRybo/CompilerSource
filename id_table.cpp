@@ -76,6 +76,7 @@ id_table::node *id_table::search_tree(string s, node *p)
 	{
 		search_tree(s, p->right);
 	}
+	return NULL;
 }
 
 id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
