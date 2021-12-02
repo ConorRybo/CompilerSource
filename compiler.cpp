@@ -62,7 +62,7 @@ error_handler *err;		 // error handler object
 scanner *scan;			 // scanner object
 parser *parse;			 // parser object
 id_table *id_tab = NULL; // symbol table object
-//code_gen* code;									// code generator
+// code_gen* code;									// code generator
 
 bool process_command_line(int argc, char *argv[])
 {
@@ -199,14 +199,14 @@ int main(int argc, char *argv[])
 
 			// THE FOLLOWIG CODE IS FOR TESTING PURPOSES ONLY.
 			scan = new scanner(source_filename, id_tab, err);
-			parse = new parser(scan, err);
+			parse = new parser(scan, id_tab, err);
 
 			// token *tok;
 			// do
 			// {
 			// 	tok = scan->get_token();
 			// } while (tok->get_sym() != symbol::end_of_program);
-			//END OF CODE FOR TESTING PURPOSES
+			// END OF CODE FOR TESTING PURPOSES
 
 			// Create a symbol_table object
 

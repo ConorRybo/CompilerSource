@@ -165,7 +165,7 @@ string id_table_entry::to_string()
             return "False";
         }
     }
-    return "no type match";
+    return "unknown";
 }
 
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type

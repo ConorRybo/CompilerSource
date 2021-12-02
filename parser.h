@@ -23,9 +23,10 @@ class parser
 private:
     bool debugging{true};
     bool simple;
-    //bool gdug;
+    // bool gdug;
     scanner *scan;
     error_handler *error;
+    id_table *idTable;
     string ident_name;
 
     void PROG();
@@ -50,7 +51,7 @@ private:
 
 public:
     parser(); // default constructor
-    parser(scanner *s, error_handler *e);
+    parser(scanner *s, id_table *idt, error_handler *e);
     // parameterized constructor to set appropriate values
 };
 

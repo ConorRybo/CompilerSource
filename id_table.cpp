@@ -84,8 +84,11 @@ id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 	// the exit case: if the root is null then insert at that node
 	if (p == NULL)
 	{
-		add_table_entry(idt_entry, p); // add the actual entry to the node
-		return p;					   // return a pointer to the new node
+		p = new node; // add the actual entry to the node
+		p->entry_info = idt_entry;
+		p->left = NULL;
+		p->right = NULL;
+		return p; // return a pointer to the new node
 	}
 
 	// compare current key to node keys
@@ -108,18 +111,16 @@ id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 // first of the overloaded two
 void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 {
-	// my interpretation is that p is a pointer to a node that
-	// the new leaf is being added at
+	// what i think is that this adds at a specified tree root location
+	// not like the deafault scope location of the other one
+	add_table_entry(idt_entry, p);
+}
 
-	// create a new leaf with the entry
-	node *leaf;
-	leaf = new node;
-	leaf->left = NULL;
-	leaf->right = NULL;
-	leaf->entry_info = idt_entry;
-
-	// point to the new leaf now
-	p = leaf;
+// second overloaded (CORRECT!!!!) add function just adds to the current scope level
+void id_table::add_table_entry(id_table_entry *idt_entry)
+{
+	// call insert, passing the idt entry and the current scope to tree pointer
+	insert(idt_entry, scope_man[scope_lvl]);
 }
 
 // perform a lookup of the datastructer with just a string (identifier => key)
@@ -164,6 +165,22 @@ void id_table::dump_tree(node *ptr)
 		cout << "value: " << ptr->entry_info->to_string() << endl;
 		dump_tree(ptr->right);
 	}
+}
+
+// this is the main adding function to handle the adding
+id_table_entry *id_table::enter_id(token *id,
+								   lille_type typ,
+								   lille_kind kind,
+								   lille_type return_tipe)
+{
+	// first create id table entry which we will return
+	id_table_entry *new_entry;
+	new_entry = new id_table_entry(id, typ, kind, return_tipe);
+
+	// take this new entry and enter it into the identifier table
+	add_table_entry(new_entry); // send the new entry to be added
+	// entry should now be added to the table, just return them now
+	return new_entry;
 }
 
 void id_table::dump_id_table(bool dump_all)

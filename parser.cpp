@@ -12,6 +12,7 @@
 #include "token.h"
 #include "error_handler.h"
 #include "id_table.h"
+#include "id_table_entry.h"
 #include "scanner.h"
 #include "lille_kind.h"
 #include "lille_type.h"
@@ -27,11 +28,12 @@ parser::parser()
     ident_name = "";
 }
 
-parser::parser(scanner *s, error_handler *e)
+parser::parser(scanner *s, id_table *idt, error_handler *e)
 { // parameterized constructor
     // set corresponding private variables to passed vals
     scan = s;
     error = e;
+    idTable = idt;
     simple = false;
     ident_name = "";
     PROG();
@@ -39,6 +41,80 @@ parser::parser(scanner *s, error_handler *e)
 
 void parser::PROG()
 {
+    // setup the predefined tokens before running the first scan
+    token *predefined_func; //
+    token *argument;
+    symbol *predefined_sym;
+    id_table_entry *func_id;
+    id_table_entry *param_id;
+
+    // create int2real predefined function
+    // setup the token to be passed create entry
+    predefined_sym = new symbol(symbol::identifier);   // create an identifier symbol
+    predefined_func = new token(predefined_sym, 0, 0); // create a token based on  that identifier
+    predefined_func->set_identifier_value("INT2REAL"); // set the identifier value
+    func_id = idTable->enter_id(predefined_func, lille_type::type_func,
+                                lille_kind::unknown, lille_type::type_real); // create id table entry and store in datastructure
+    // Create a token for the parameter of the predefined function
+    argument = new token(predefined_sym, 0, 0);         // create a new arguement for the predifined function
+    argument->set_identifier_value("__int2real_arg__"); // setting token ident value
+    param_id = new id_table_entry(argument,
+                                  lille_type::type_integer,
+                                  lille_kind::value_param,
+                                  lille_type::type_unknown); // create a new table entry (but dont put into the tree)
+    // Associate parameter with the function.
+    func_id->add_param(param_id); // add the parameter to the associated function
+
+    // repeat above with real2int
+    predefined_sym = new symbol(symbol::identifier);   // create an identifier symbol
+    predefined_func = new token(predefined_sym, 0, 0); // create a token based on  that identifier
+    predefined_func->set_identifier_value("REAL2INT"); // set the identifier value
+    func_id = idTable->enter_id(predefined_func, lille_type::type_func,
+                                lille_kind::unknown, lille_type::type_integer); // create id table entry and store in datastructure
+    // Create a token for the parameter of the predefined function
+    argument = new token(predefined_sym, 0, 0);         // create a new arguement for the predifined function
+    argument->set_identifier_value("__real2int_arg__"); // setting token ident value
+    param_id = new id_table_entry(argument,
+                                  lille_type::type_real,
+                                  lille_kind::value_param,
+                                  lille_type::type_unknown); // create a new table entry (but dont put into the tree)
+    // Associate parameter with the function.
+    func_id->add_param(param_id); // add the parameter to the associated function
+
+    // repeat above with int2string
+    predefined_sym = new symbol(symbol::identifier);     // create an identifier symbol
+    predefined_func = new token(predefined_sym, 0, 0);   // create a token based on  that identifier
+    predefined_func->set_identifier_value("INT2STRING"); // set the identifier value
+    func_id = idTable->enter_id(predefined_func, lille_type::type_func,
+                                lille_kind::unknown, lille_type::type_string); // create id table entry and store in datastructure
+    // Create a token for the parameter of the predefined function
+    argument = new token(predefined_sym, 0, 0);           // create a new arguement for the predifined function
+    argument->set_identifier_value("__int2string_arg__"); // setting token ident value
+    param_id = new id_table_entry(argument,
+                                  lille_type::type_integer,
+                                  lille_kind::value_param,
+                                  lille_type::type_unknown); // create a new table entry (but dont put into the tree)
+    // Associate parameter with the function.
+    func_id->add_param(param_id); // add the parameter to the associated function
+
+    // one final time with real2string
+    predefined_sym = new symbol(symbol::identifier);      // create an identifier symbol
+    predefined_func = new token(predefined_sym, 0, 0);    // create a token based on  that identifier
+    predefined_func->set_identifier_value("REAL2STRING"); // set the identifier value
+    func_id = idTable->enter_id(predefined_func, lille_type::type_func,
+                                lille_kind::unknown, lille_type::type_string); // create id table entry and store in datastructure
+    // Create a token for the parameter of the predefined function
+    argument = new token(predefined_sym, 0, 0);            // create a new arguement for the predifined function
+    argument->set_identifier_value("__real2string_arg__"); // setting token ident value
+    param_id = new id_table_entry(argument,
+                                  lille_type::type_real,
+                                  lille_kind::value_param,
+                                  lille_type::type_unknown); // create a new table entry (but dont put into the tree)
+    // Associate parameter with the function.
+    func_id->add_param(param_id); // add the parameter to the associated function
+
+    // lets get logic started
+
     scan->get_token(); // get the first token from the scanner
     if (debugging)     // signaling
         cout << "Entering Prog" << endl;
@@ -46,6 +122,8 @@ void parser::PROG()
     if (scan->have(symbol::identifier)) // storing the identifier
     {
         ident_name = scan->this_token()->get_identifier_value(); // storing to check after end statement
+        // enter the identifier into the table
+        id_table_entry *run = idTable->enter_id(scan->this_token());
     }
     scan->must_be(symbol::identifier); // if it isn't an identifier throw err
     scan->must_be(symbol::is_sym);     // looking for the is symbol
@@ -137,7 +215,7 @@ void parser::DECLARATION()
         {
             error->flag(scan->this_token(), 5);
         }
-        //scan->must_be(symbol::semicolon_sym);
+        // scan->must_be(symbol::semicolon_sym);
     }
 
     // if it is a procedure or function we have similar
@@ -236,7 +314,7 @@ void parser::STATEMENT_LIST()
     {
         cout << "entering STATEMENT_LIST()" << endl;
     }
-    //start statement list
+    // start statement list
     STATEMENT();
     scan->must_be(symbol::semicolon_sym); // each statement must terminate with ;
     while (IS_STATEMENT())                // loop on is statement
@@ -265,7 +343,7 @@ void parser::STATEMENT()
     {
         SIMPLE_STATEMENT();
     }
-    //scan->get_token();
+    // scan->get_token();
 }
 
 void parser::SIMPLE_STATEMENT()
@@ -471,7 +549,7 @@ void parser::IF_STATEMENT()
 void parser::LOOP_STATEMENT() // eval loop statement
 {
     scan->must_be(symbol::loop_sym);
-    //scan->get_token();
+    // scan->get_token();
     STATEMENT_LIST();
     scan->must_be(symbol::end_sym);
     scan->must_be(symbol::loop_sym);
@@ -670,7 +748,7 @@ bool parser::IS_EXPR2()
     {
         cout << "entering expr2 logic" << endl;
     }
-    if (!IS_TERM()) //must start with a terms
+    if (!IS_TERM()) // must start with a terms
     {
         return false;
     }
@@ -678,7 +756,7 @@ bool parser::IS_EXPR2()
     while (scan->have(symbol::plus_sym) || scan->have(symbol::minus_sym) || scan->have(symbol::or_sym))
     {
         scan->get_token();
-        if (!IS_TERM()) //must start with a terms
+        if (!IS_TERM()) // must start with a terms
         {
             return false;
         }

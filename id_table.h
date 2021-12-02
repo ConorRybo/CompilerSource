@@ -47,6 +47,12 @@ public:
     id_table_entry *lookup(token *tok);              // our search method to find out if the
                                                      // identifier is located in the tree
     void add_table_entry(id_table_entry *idt_entry); // add to the id table - create node then pass node to same function name
+    id_table_entry *enter_id(token *id,
+                             lille_type typ = lille_type::type_unknown,
+                             lille_kind kind = lille_kind::unknown,
+                             lille_type return_tipe =
+                                 lille_type::type_unknown); // this is the main adding function that will return a pointer to the node
+                                                            // as well as set and enter the id into the table
     void dump_id_table(bool dump_all = true);
 };
 
