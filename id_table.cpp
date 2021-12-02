@@ -36,23 +36,22 @@ id_table::id_table(error_handler *err)
 {
 	// initialize to defaults or passed vals
 	error = err;
-	scope_man.clear();
 	scope_lvl = 0;
+	sym_table[0] = NULL;
 }
 
 void id_table::enter_new_scope()
 {
 	// what needs to be adjusted when the scope is incremented
-	scope_man.push_back(NULL); // push a new slot onto the array filled by a null ptr
-	scope_lvl++;			   // keep track of scope level
+	scope_lvl++; // keep track of scope level
+	sym_table[scope_lvl] = NULL;
 }
 
 void id_table::exit_scope()
 {
 	// when exiting what really only needs to be done?
-	scope_man[scope_lvl] = NULL; // just to be sure set the root pointer to null
-	scope_man.pop_back();		 // remove the last element (leave that scope)
-	scope_lvl--;				 // keep track of the scope
+	sym_table[scope_lvl] = NULL;
+	scope_lvl--; // keep track of the scope
 }
 
 // search tree algoritbm for the node
@@ -122,7 +121,7 @@ void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
 void id_table::add_table_entry(id_table_entry *idt_entry)
 {
 	// call insert, passing the idt entry and the current scope to tree pointer
-	insert(idt_entry, scope_man[scope_lvl]);
+	insert(idt_entry, sym_table[scope_lvl]);
 }
 
 // perform a lookup of the datastructer with just a string (identifier => key)
@@ -131,11 +130,11 @@ id_table_entry *id_table::lookup(string s)
 	// we want to make sure that we start at the current scope level and then work backwards
 	int lscop = scope_lvl; // keep a local v so we can decrement
 	// create a result node and run the search on the current level of scope we are at
-	node *result = search_tree(s, scope_man[lscop]);
+	node *result = search_tree(s, sym_table[lscop]);
 	lscop--;
 	while (result == NULL && lscop >= 0) // if and while there is nothing found
 	{
-		result = search_tree(s, scope_man[lscop]);
+		result = search_tree(s, sym_table[lscop]);
 	}
 
 	if (result == NULL)
@@ -192,7 +191,7 @@ void id_table::dump_id_table(bool dump_all)
 		cout << "Dump of idtable for current scope only." << endl;
 		cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
 		cout << "current scope level: " << scope_lvl << endl;
-		dump_tree(scope_man[scope_lvl]); // just dump at the current scope level
+		dump_tree(sym_table[scope_lvl]); // just dump at the current scope level
 	}
 	else
 	{
@@ -203,7 +202,7 @@ void id_table::dump_id_table(bool dump_all)
 		{
 			cout << endl;
 			cout << "current scope level: " << scolev << endl;
-			dump_tree(scope_man[scolev]); // dump the tree at the current level
+			dump_tree(sym_table[scolev]); // dump the tree at the current level
 			scolev--;					  // move up a level and then print it
 		}
 	}

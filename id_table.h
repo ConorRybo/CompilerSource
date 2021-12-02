@@ -31,8 +31,8 @@ private:
     };
 
     error_handler *error;
-    vector<node *> scope_man; // where we will manage the scope levels
-    int scope_lvl;            // holds the current scope level
+    node *sym_table[500]; // create the space to hold varios trees at scopes
+    int scope_lvl;        // holds the current scope level
 
     node *search_tree(string s, node *p);                     // method to search a tree in level order
     node *insert(id_table_entry *idt_entry, node *p);         // insert in tree starting with node p

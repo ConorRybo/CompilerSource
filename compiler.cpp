@@ -42,6 +42,8 @@
 #include "parser.h"
 #include "symbol.h"
 #include "error_handler.h"
+#include "id_table.h"
+#include "id_table_entry.h"
 //#include "code_gen.h"
 //#include "id_table.h"
 
@@ -58,10 +60,10 @@ string source_filename;	 // Name of the source file containing DO code to be com
 string code_filename;	 // Name of the PAL output file to be generated.
 string listing_filename; // name of the listing file to be generated if needed.
 
-error_handler *err;		 // error handler object
-scanner *scan;			 // scanner object
-parser *parse;			 // parser object
-id_table *id_tab = NULL; // symbol table object
+error_handler *err; // error handler object
+scanner *scan;		// scanner object
+parser *parse;		// parser object
+id_table *id_tab;
 // code_gen* code;									// code generator
 
 bool process_command_line(int argc, char *argv[])
@@ -198,6 +200,7 @@ int main(int argc, char *argv[])
 				err = new error_handler(source_filename, listing_filename);
 
 			// THE FOLLOWIG CODE IS FOR TESTING PURPOSES ONLY.
+			id_tab = new id_table(err);
 			scan = new scanner(source_filename, id_tab, err);
 			parse = new parser(scan, id_tab, err);
 
