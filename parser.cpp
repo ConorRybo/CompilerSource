@@ -1003,8 +1003,80 @@ bool parser::IS_FACTOR()
         }
         // create new id table entry with all the computer infor an set currentHold to it
         parTok = new token(tempSym, scan->this_token()->get_line_number(), scan->this_token()->get_pos_on_line());
+        // need to make sure that we actually set appropriate values based on type
+        if (iH != 0)
+        {
+            parTok->set_integer_value(iH);
+        }
+        else
+        {
+            parTok->set_real_value(rH);
+        }
         temp = new id_table_entry(parTok, compType); // create new entry
         temp->fix_const(iH, rH);                     // theoretically will only be a int or real
+        // set the exiting holder before returning
+        currentHold = temp;
+
+        return true;
+    }
+
+    if (!frst) // if there is not some sort of preceding ordered or identifier
+    {
+        // need to type check everything to make sure its compatable
+        if (holdParent->tipe().is_type(lille_type::type_integer))
+        {
+            // if it is a real than the resulting type is real
+            if (childOne->tipe().is_type(lille_type::type_real))
+            {
+                // calc the actual new value to be stored
+                if (addr) // if we need to add
+                {
+                    rH = holdParent->integer_value() + childOne->integer_value();
+                }
+                else // subtraction
+                {
+                    rH = holdParent->integer_value() - childOne->integer_value();
+                }
+                // create a new token and create entry for id table
+                compType = lille_type::type_real;
+                tempSym->set_sym(symbol::real_num);
+                parTok = new token(tempSym, scan->this_token()->get_line_number(), scan->this_token()->get_pos_on_line());
+                // set the calculated value and add to token
+                parTok->set_integer_value(rH);
+            }
+            else if (childOne->tipe().is_type(lille_type::type_integer))
+            {
+                if (addr)
+                {
+                    iH = holdParent->integer_value() + childOne->integer_value();
+                }
+                else
+                {
+                    iH = holdParent->integer_value() - childOne->integer_value();
+                }
+                // create a new token and create entry for
+                compType = lille_type::type_integer;
+                tempSym->set_sym(symbol::integer);
+                parTok = new token(tempSym, scan->this_token()->get_line_number(), scan->this_token()->get_pos_on_line());
+                // set the calculated value and add to token
+                parTok->set_integer_value(iH);
+            }
+            else // if it isnt followed by an int or real
+            {
+                error->flag(cOneTok, 86); // throw integer or real expecter error
+                return false;
+            }
+            // create the new id table entry to replace the old current
+            temp = new id_table_entry(parTok, lille_type::type_integer);
+            temp->fix_const(iH, rH);
+            currentHold = temp;
+        }
+        else if (holdParent->tipe().is_type(lille_type::type_real))
+        {
+                }
+        else if (holdParent->tipe().is_type(lille_type::type_string))
+        {
+        }
     }
 
     if (debugging)
