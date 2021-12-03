@@ -34,10 +34,10 @@ private:
     node *sym_table[500]; // create the space to hold varios trees at scopes
     int scope_lvl;        // holds the current scope level
 
-    node *search_tree(string s, node *p);                     // method to search a tree in level order
-    node *insert(id_table_entry *idt_entry, node *p);         // insert in tree starting with node p
-    void add_table_entry(id_table_entry *idt_entry, node *p); // method to add an entry to the tree
-    void dump_tree(node *ptr);                                // method to dump all the contents of the tree? null out all the nodes??
+    node *search_tree(string s, node *p);             // method to search a tree in level order
+    node *insert(id_table_entry *idt_entry, node *p); // insert in tree starting with node p
+    // void add_table_entry(id_table_entry *idt_entry, node *p); // method to add an entry to the tree
+    void dump_tree(node *ptr); // method to dump all the contents of the tree? null out all the nodes??
 
 public:
     id_table(error_handler *err);

@@ -109,13 +109,13 @@ id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
 	return p;
 }
 
-// first of the overloaded two
-void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
-{
-	// what i think is that this adds at a specified tree root location
-	// not like the deafault scope location of the other one
-	add_table_entry(idt_entry, p);
-}
+// // first of the overloaded two
+// void id_table::add_table_entry(id_table_entry *idt_entry, node *p)
+// {
+// 	// what i think is that this adds at a specified tree root location
+// 	// not like the deafault scope location of the other one
+// 	add_table_entry(idt_entry, p);
+// }
 
 // second overloaded (CORRECT!!!!) add function just adds to the current scope level
 void id_table::add_table_entry(id_table_entry *idt_entry)

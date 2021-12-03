@@ -177,6 +177,12 @@ void id_table_entry::fix_type(lille_type ident_type)
     type_entry = ident_type;
 }
 
+// fix up the kind of the table entry
+void id_table_entry::fix_kind(lille_kind ident_kind)
+{
+    kind_entry = ident_kind;
+}
+
 void id_table_entry::fix_return_type(lille_type new_ret) // with functions we dont know their type
 {
     r_ty_entry = new_ret;

@@ -123,24 +123,26 @@ void parser::PROG()
     {
         ident_name = scan->this_token()->get_identifier_value(); // storing to check after end statement
         // enter the identifier into the table
-        id_table_entry *run = idTable->enter_id(scan->this_token());
+        idTable->enter_id(scan->this_token());
     }
     scan->must_be(symbol::identifier); // if it isn't an identifier throw err
-    idTable->enter_new_scope();        // now we are entering the program so we change scope
-    idTable->dump_id_table(true);
+    // idTable->enter_new_scope();        // now we are entering the program so we change scope
+    // idTable->dump_id_table(true);
     scan->must_be(symbol::is_sym); // looking for the is symbol
     BLOCK(ident_name);             // call block and pass the name of the proc
     scan->must_be(symbol::semicolon_sym);
     idTable->dump_id_table(true);
-    idTable->exit_scope();
+    idTable->exit_scope();                 // exit to scope level 0
     scan->must_be(symbol::end_of_program); // catches any trash after program
 }
 
 void parser::BLOCK(string bName)
 {
+    idTable->enter_new_scope();
     if (debugging)
     {
         cout << "entering block " << bName << endl;
+        idTable->dump_id_table(true);
     }
 
     while (scan->have(symbol::identifier) || scan->have(symbol::procedure_sym) || scan->have(symbol::function_sym)) // if the current symbol is an identifier
@@ -170,10 +172,11 @@ void parser::DECLARATION()
     bool fun, proc = false;
     // create a list to hold multiple identifiers (jic)
     vector<id_table_entry *> id_list;
-
+    vector<id_table_entry *> params;
+    id_table_entry *profunHolder;
     lille_type type_fix; // need to fix variables with appropriate type
     lille_type varType;  // if its a constant we need to make sure dec val matches ident type
-
+    lille_kind kindFix;  // to fix the types after a param list
     if (debugging)
         cout << "entering declaration" << endl;
     // if it is an identifier list
@@ -358,18 +361,39 @@ void parser::DECLARATION()
         scan->get_token();
         if (scan->have(symbol::identifier))
         {
+            // get the name of the identifier to check after the
             bname = scan->this_token()->get_identifier_value();
+            if (proc == true) // enter the type into the id table based on if its a proc or func
+            {
+                type_fix = lille_type::type_proc;
+            }
+            else
+            {
+                type_fix = lille_type::type_func;
+            }
+            // enter the name of the proc/func into the id table
+            profunHolder = idTable->enter_id(scan->this_token(), type_fix);
+            idTable->enter_new_scope(); // after the procedure or function name we enter a new scope
         }
-        scan->must_be(symbol::identifier);
+        scan->must_be(symbol::identifier);      // get rid of the identifier symbol
         if (scan->have(symbol::left_paren_sym)) // if theres a parameter list
         {
             while (prm)
             {
-                scan->get_token();                 // get the next token
+                params.clear();                     // clear at the beginning of each loop to make sure not building on last param list
+                scan->get_token();                  // get the next token
+                if (scan->have(symbol::identifier)) // if theres an identifier enter it into table
+                {
+                    params.push_back(idTable->enter_id(scan->get_token())); // push the first ident into the vector
+                }
                 scan->must_be(symbol::identifier); // check and throw out first ident
                 while (scan->have(symbol::comma_sym))
-                {                                      // if there is a list of identifiers
-                    scan->get_token();                 // get rid of comma
+                {                                       // if there is a list of identifiers
+                    scan->get_token();                  // get rid of comma
+                    if (scan->have(symbol::identifier)) // push the identifier
+                    {
+                        params.push_back(idTable->enter_id(scan->get_token())); // push the idents into the vector
+                    }
                     scan->must_be(symbol::identifier); // must be list of identifiers
                 }
                 scan->must_be(symbol::colon_sym);                                   // there must be a colon following ident/ident list
@@ -378,18 +402,51 @@ void parser::DECLARATION()
                     // error we expect parameter kind
                     error->flag(scan->this_token(), 94);
                 }
-                else
+                else // if we do have a kind of parameter
                 {
+                    // get the kind so we can update in the future
+                    if (scan->have(symbol::value_sym))
+                    {
+                        kindFix = lille_kind::value_param;
+                    }
+                    else
+                    {
+                        kindFix = lille_kind::ref_param;
+                    }
                     scan->get_token(); // correct so get next token
                 }
                 // next thing must be a type declaration
                 if (scan->have(symbol::integer_sym) || scan->have(symbol::real_sym) || scan->have(symbol::string_sym) || scan->have(symbol::boolean_sym))
                 {
+                    // get the correct type so we can fix up the params later
+                    if (scan->have(symbol::integer_sym))
+                    {
+                        varType = lille_type::type_integer;
+                    }
+                    else if (scan->have(symbol::real_sym))
+                    {
+                        varType = lille_type::type_integer;
+                    }
+                    else if (scan->have(symbol::string_sym))
+                    {
+                        varType = lille_type::type_integer;
+                    }
+                    else // boolean logic
+                    {
+                        varType = lille_type::type_integer;
+                    }
                     scan->get_token(); // get a new token
                 }
                 else
                 {
                     error->flag(scan->get_token(), 96); // throw type name expected error
+                }
+                // logic to look over list and fix the types and kinds
+                for (int i = 0; i < params.size(); i++)
+                {
+                    params[i]->fix_type(varType); // fix the type and kind at this level
+                    params[i]->fix_kind(kindFix);
+                    profunHolder->add_param(params[i]); // add the parameters to the func or proc
                 }
                 // if there is a semi then we know theres more params
                 // so continue looping through param logic
@@ -403,7 +460,8 @@ void parser::DECLARATION()
         }
         if (fun) // if it is a function we need return and type before is
         {
-            scan->must_be(symbol::return_sym);
+            scan->must_be(symbol::return_sym); // must have a return symbol
+            // if it is a function we must then store its return value
             if (scan->have(symbol::integer_sym) || scan->have(symbol::real_sym) || scan->have(symbol::string_sym) || scan->have(symbol::boolean_sym))
             {
                 scan->get_token();

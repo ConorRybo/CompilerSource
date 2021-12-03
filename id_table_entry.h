@@ -56,6 +56,7 @@ public:
     // if there is an identifier list then we
     // must fix all the types of the ones after we enter them
     void fix_type(lille_type ident_type);
+    void fix_kind(lille_kind ident_kind);
     string to_string();
 };
 #endif
