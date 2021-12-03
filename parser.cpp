@@ -123,7 +123,6 @@ void parser::PROG()
     func_id->add_param(param_id); // add the parameter to the associated function
 
     // lets get logic started
-
     scan->get_token(); // get the first token from the scanner
     if (debugging)     // signaling
         cout << "Entering Prog" << endl;
@@ -140,7 +139,7 @@ void parser::PROG()
     scan->must_be(symbol::is_sym); // looking for the is symbol
     BLOCK(ident_name);             // call block and pass the name of the proc
     scan->must_be(symbol::semicolon_sym);
-    idTable->dump_id_table(true);
+    // idTable->dump_id_table(true);
     idTable->exit_scope();                 // exit to scope level 0
     scan->must_be(symbol::end_of_program); // catches any trash after program
 }
@@ -162,7 +161,7 @@ void parser::BLOCK(string bName)
     scan->must_be(symbol::begin_sym); // if there isn't any identifiers then must be begin
     STATEMENT_LIST();                 // call the statement list function
     scan->must_be(symbol::end_sym);
-    idTable->dump_id_table(true);
+    // idTable->dump_id_table(true);
     idTable->exit_scope();
     if (scan->have(symbol::identifier))
     {
@@ -915,18 +914,31 @@ bool parser::IS_FACTOR()
 {
     // some entry storage
     id_table_entry *holdParent;
+    symbol *tempSym;
+    token *parTok;
+    token *cOneTok;
+    token *cTwoTok;
     id_table_entry *childOne;
     id_table_entry *childTwo;
-    bool addr, subr = false;
-    float rH;
-    int iH;
+    id_table_entry *temp;
+    bool addr, subr, frst = false;
+    float rH = 0.0;
+    int iH = 0;
     lille_type compType;
     if (debugging)
     {
         cout << "entering factor logic check" << endl;
     }
+    // if there is not an entry currently being held
+    if (currentHold == NULL)
+    {
+        frst = true;
+    }
+    else // if there is a preceding factor  store that info
+    {
+        holdParent = currentHold;
+    }
     // as soon as the function is called get the entry
-    holdParent = currentHold;
 
     // **** FACTOR SECTION ****
     if (scan->have(symbol::plus_sym) || scan->have(symbol::minus_sym)) // if theres a preceding addop
@@ -948,7 +960,9 @@ bool parser::IS_FACTOR()
         return false;
     }
     // after is primary there SHOULD be some sort of current_kind set
+    // so store at local level
     childOne = currentHold;
+    cOneTok = childOne->token_value();
 
     if (scan->have(symbol::power_sym)) // check for <primary> ** <primary>
     {
@@ -959,16 +973,40 @@ bool parser::IS_FACTOR()
         }
         // get the returned entry and type check then preform operation
         childTwo = currentHold;
-        /*
-            DONT WORRY ABOUT TYPE COMPAT CHECKING BETWEEN OLD HOLDER AND NEW
-            LET THE CALLING FUNCTION WORRY ABOUT THE COMPATIBILITY
-        */
-        if (childOne->tipe().is_type(lille_type::type_real)) // if the first primary is a real than the expression evaluates to a real
+        cTwoTok = childTwo->token_value();
+
+        if (childOne->tipe().is_type(lille_type::type_real) && childTwo->tipe().is_type(lille_type::type_integer)) // if the first primary is a real than the expression evaluates to a real
         {
             // do the actual operation
             rH = pow(childOne->real_value(), childTwo->integer_value());
+            compType = lille_type::type_real;   // if it starts with a real then the whole expression evals to real
+            tempSym->set_sym(symbol::real_num); // set the symbol currectly
         }
+        else if (childOne->tipe().is_type(lille_type::type_integer) && childTwo->tipe().is_type(lille_type::type_integer))
+        {
+            iH = pow(childOne->integer_value(), childTwo->integer_value());
+            compType = lille_type::type_integer; // get the type set
+            tempSym->set_sym(symbol::integer);   // set the symbol correctly
+        }
+        else
+        {
+            // if theres a type incompatability throw appropriate error at correct spot
+            if (!childOne->tipe().is_type(lille_type::type_integer) && !childOne->tipe().is_type(lille_type::type_integer))
+            {
+                error->flag(cOneTok, 86); // throw int or real expected
+            }
+            else if (!childTwo->tipe().is_type(lille_type::type_integer))
+            {
+                error->flag(cTwoTok, 3); // must be integer on right side
+            }
+            return false;
+        }
+        // create new id table entry with all the computer infor an set currentHold to it
+        parTok = new token(tempSym, scan->this_token()->get_line_number(), scan->this_token()->get_pos_on_line());
+        temp = new id_table_entry(parTok, compType); // create new entry
+        temp->fix_const(iH, rH);                     // theoretically will only be a int or real
     }
+
     if (debugging)
     {
         cout << "exiting factor logic" << endl;
@@ -1072,30 +1110,48 @@ bool parser::IS_SIMPEX()
 
 bool parser::IS_PRIMARY()
 {
+    id_table_entry *tempHold;
+
     if (debugging)
     {
         cout << "checking primary logic" << endl;
     }
+    // if its a number/string/bool store into ID table and pass entrty to current hold which is accessible by caller for type checking
     if (scan->have(symbol::real_num) || scan->have(symbol::integer) || scan->have(symbol::true_sym) || scan->have(symbol::false_sym) || scan->have(symbol::strng))
     {
+        if (scan->have(symbol::real_num)) // based off the type that it is enter it into the table and store in currentHold
+        {
+            currentHold = idTable->enter_id(scan->this_token(), lille_type::type_real, lille_kind::constant);
+        }
+        if (scan->have(symbol::integer))
+        {
+            currentHold = idTable->enter_id(scan->this_token(), lille_type::type_integer, lille_kind::constant);
+        }
+        if (scan->have(symbol::strng))
+        {
+            currentHold = idTable->enter_id(scan->this_token(), lille_type::type_string, lille_kind::constant);
+        }
+        else
+        {
+            currentHold = idTable->enter_id(scan->this_token(), lille_type::type_boolean, lille_kind::constant);
+        }
         scan->get_token();
         return true;
     }
     else if (scan->have(symbol::identifier)) // if theres an identifier
     {
+        // we want to look for it and store it so calling function can access information
+        // about it
         currentHold = idTable->lookup(scan->this_token()); // look in the id table
         if (currentHold == NULL)                           // if the search doesn't resolve
         {
             error->flag(scan->this_token(), 81);
         }
-        // put the type into the type array
-        type_hold = currentHold->tipe();
-        // current_type = currentHold->tipe(); // store the type and kind in current vars
-        current_kind = currentHold->kind();
 
         scan->get_token();
         if (scan->have(symbol::left_paren_sym)) // if thers an expression list
         {
+            tempHold = currentHold; // when is expression gets called it will modify current hold
             scan->get_token();
             if (!IS_EXPRESSION()) // needs to be followed by an expression or list of expressions
             {

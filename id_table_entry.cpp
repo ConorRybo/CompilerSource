@@ -93,7 +93,7 @@ void id_table_entry::fix_const(int integer_value,
                                bool bool_value)
 {
     // make sure that the kind entry is set to constant
-    kind_entry = lille_kind::constant;
+    // kind_entry = lille_kind::constant;
 
     if (type_entry.is_type(lille_type::type_integer))
     {

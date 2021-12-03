@@ -58,10 +58,12 @@ void id_table::exit_scope()
 id_table::node *id_table::search_tree(string s, node *p)
 {
 	// if there isnt a matching entry then return null
+	// if  there is a match then return the
 	if (p == NULL)
 	{
-		return NULL;
+		return p;
 	}
+
 	// check for a match
 	if (p->entry_info->token_value()->get_identifier_value() == s)
 	{
@@ -71,13 +73,11 @@ id_table::node *id_table::search_tree(string s, node *p)
 	// if the desired is less than current node then search left
 	if (p->entry_info->token_value()->get_identifier_value() > s)
 	{
-		search_tree(s, p->left);
+		return search_tree(s, p->left);
 	}
-	else // look to the right node
-	{
-		search_tree(s, p->right);
-	}
-	return NULL;
+	// if it is larger than look at the right node
+	// look to the right node
+	return search_tree(s, p->right);
 }
 
 id_table::node *id_table::insert(id_table_entry *idt_entry, node *p)
@@ -127,13 +127,17 @@ void id_table::add_table_entry(id_table_entry *idt_entry)
 // perform a lookup of the datastructer with just a string (identifier => key)
 id_table_entry *id_table::lookup(string s)
 {
+
 	// we want to make sure that we start at the current scope level and then work backwards
 	int lscop = scope_lvl; // keep a local v so we can decrement
+	for (auto &c : s)
+		c = toupper(c);
 	// create a result node and run the search on the current level of scope we are at
 	node *result = search_tree(s, sym_table[lscop]);
 	lscop--;
 	while (result == NULL && lscop >= 0) // if and while there is nothing found
 	{
+		cout << lscop << endl;
 		result = search_tree(s, sym_table[lscop]);
 	}
 
