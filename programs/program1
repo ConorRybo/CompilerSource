@@ -1,5 +1,9 @@
 program prog1 is
-	x, y, z : boolean ;
+	
+	procedure double (n1, n2, n3: ref real; m1: value string) is
+	begin
+		return n1;
+	end;
 begin
 write "Hello there" ;
 end ;

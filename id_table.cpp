@@ -169,6 +169,7 @@ void id_table::dump_tree(node *ptr)
 	cout << "kind: " << ptr->entry_info->kind().to_string() << endl;
 	cout << "type: " << ptr->entry_info->tipe().to_string() << endl;
 	cout << "value: " << ptr->entry_info->to_string() << endl;
+	cout << "return type: " << ptr->entry_info->return_tipe().to_string() << endl;
 	dump_tree(ptr->right);
 }
 

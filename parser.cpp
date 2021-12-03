@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <math.h>
 
 #include "parser.h"
 #include "symbol.h"
@@ -26,6 +27,10 @@ parser::parser()
     error = NULL;
     simple = false;
     ident_name = "";
+    currentHold = new id_table_entry();
+    ent_hold.clear();
+    ent_hold.push_back(NULL);
+    current_type, type_hold = lille_type::type_unknown;
 }
 
 parser::parser(scanner *s, id_table *idt, error_handler *e)
@@ -36,6 +41,10 @@ parser::parser(scanner *s, id_table *idt, error_handler *e)
     idTable = idt;
     simple = false;
     ident_name = "";
+    currentHold = new id_table_entry();
+    ent_hold.clear();
+    ent_hold.push_back(NULL);
+    current_type, type_hold = lille_type::type_unknown;
     PROG();
 }
 
@@ -123,10 +132,10 @@ void parser::PROG()
     {
         ident_name = scan->this_token()->get_identifier_value(); // storing to check after end statement
         // enter the identifier into the table
-        idTable->enter_id(scan->this_token());
+        idTable->enter_id(scan->this_token(), lille_type::type_prog);
     }
     scan->must_be(symbol::identifier); // if it isn't an identifier throw err
-    // idTable->enter_new_scope();        // now we are entering the program so we change scope
+    idTable->enter_new_scope();        // now we are entering the program so we change scope
     // idTable->dump_id_table(true);
     scan->must_be(symbol::is_sym); // looking for the is symbol
     BLOCK(ident_name);             // call block and pass the name of the proc
@@ -138,11 +147,10 @@ void parser::PROG()
 
 void parser::BLOCK(string bName)
 {
-    idTable->enter_new_scope();
     if (debugging)
     {
         cout << "entering block " << bName << endl;
-        idTable->dump_id_table(true);
+        // idTable->dump_id_table(true);
     }
 
     while (scan->have(symbol::identifier) || scan->have(symbol::procedure_sym) || scan->have(symbol::function_sym)) // if the current symbol is an identifier
@@ -154,6 +162,8 @@ void parser::BLOCK(string bName)
     scan->must_be(symbol::begin_sym); // if there isn't any identifiers then must be begin
     STATEMENT_LIST();                 // call the statement list function
     scan->must_be(symbol::end_sym);
+    idTable->dump_id_table(true);
+    idTable->exit_scope();
     if (scan->have(symbol::identifier))
     {
         if (scan->this_token()->get_identifier_value() != bName)
@@ -270,8 +280,8 @@ void parser::DECLARATION()
                 }
                 else if (varType.is_type(lille_type::type_real))
                 {
-                    if (!scan->have(symbol::real_num))
-                        error->flag(scan->this_token(), 2); // throw integer expected error
+                    if (!scan->have(symbol::real_num) && !scan->have(symbol::integer))
+                        error->flag(scan->this_token(), 86); // throw integer or real expected error
                     else
                     {
                         for (int i = 0; i < id_list.size(); i++)
@@ -283,7 +293,7 @@ void parser::DECLARATION()
                 else if (varType.is_type(lille_type::type_string))
                 {
                     if (!scan->have(symbol::strng))
-                        error->flag(scan->this_token(), 1); // throw integer expected error
+                        error->flag(scan->this_token(), 1); // throw string expected error
                     else
                     {
                         for (int i = 0; i < id_list.size(); i++)
@@ -312,7 +322,7 @@ void parser::DECLARATION()
                     }
                     else
                     {
-                        error->flag(scan->this_token(), 103); // throw integer expected error
+                        error->flag(scan->this_token(), 103); // throw bool expected error
                     }
                 }
             }
@@ -384,7 +394,7 @@ void parser::DECLARATION()
                 scan->get_token();                  // get the next token
                 if (scan->have(symbol::identifier)) // if theres an identifier enter it into table
                 {
-                    params.push_back(idTable->enter_id(scan->get_token())); // push the first ident into the vector
+                    params.push_back(idTable->enter_id(scan->this_token())); // push the first ident into the vector
                 }
                 scan->must_be(symbol::identifier); // check and throw out first ident
                 while (scan->have(symbol::comma_sym))
@@ -392,7 +402,7 @@ void parser::DECLARATION()
                     scan->get_token();                  // get rid of comma
                     if (scan->have(symbol::identifier)) // push the identifier
                     {
-                        params.push_back(idTable->enter_id(scan->get_token())); // push the idents into the vector
+                        params.push_back(idTable->enter_id(scan->this_token())); // push the idents into the vector
                     }
                     scan->must_be(symbol::identifier); // must be list of identifiers
                 }
@@ -425,15 +435,15 @@ void parser::DECLARATION()
                     }
                     else if (scan->have(symbol::real_sym))
                     {
-                        varType = lille_type::type_integer;
+                        varType = lille_type::type_real;
                     }
                     else if (scan->have(symbol::string_sym))
                     {
-                        varType = lille_type::type_integer;
+                        varType = lille_type::type_string;
                     }
                     else // boolean logic
                     {
-                        varType = lille_type::type_integer;
+                        varType = lille_type::type_boolean;
                     }
                     scan->get_token(); // get a new token
                 }
@@ -464,6 +474,25 @@ void parser::DECLARATION()
             // if it is a function we must then store its return value
             if (scan->have(symbol::integer_sym) || scan->have(symbol::real_sym) || scan->have(symbol::string_sym) || scan->have(symbol::boolean_sym))
             {
+                // get the correct type so we can fix up the function later
+                if (scan->have(symbol::integer_sym))
+                {
+                    varType = lille_type::type_integer;
+                }
+                else if (scan->have(symbol::real_sym))
+                {
+                    varType = lille_type::type_real;
+                }
+                else if (scan->have(symbol::string_sym))
+                {
+                    varType = lille_type::type_string;
+                }
+                else // boolean logic
+                {
+                    varType = lille_type::type_boolean;
+                }
+                profunHolder->fix_return_type(varType); // fix the return type of the function
+
                 scan->get_token();
             }
             else
@@ -525,6 +554,8 @@ void parser::SIMPLE_STATEMENT()
     bool sing = false; // only for where expression only evald once
     bool par = false;  // parenth checking
     bool expr = true;  // used to control entry into expression logic
+    vector<id_table_entry *> identList;
+    id_table_entry *currHold; // just a spot to hold a table entry
     if (debugging)
     {
         cout << "entering simple statement logic" << endl;
@@ -541,10 +572,37 @@ void parser::SIMPLE_STATEMENT()
             par = true; // me must now check for right parenth
             scan->get_token();
         }
+        if (scan->have(symbol::identifier)) // if theres an identifier it must be arith type
+        {
+            currHold = idTable->lookup(scan->this_token()); // lookup the current token
+            if (currHold == NULL)                           // if there isn't a match
+            {
+                error->flag(scan->this_token(), 81);
+            }
+            else if (!currHold->tipe().is_type(lille_type::type_integer) && !currHold->tipe().is_type(lille_type::type_real))
+            {
+                // if the variable passed to read isnt an integer or real number
+                error->flag(scan->this_token(), 86); // throw int or real expected
+            }
+        }
+        // get rid of token
         scan->must_be(symbol::identifier);
         while (scan->have(symbol::comma_sym)) // if there are multiple identifiers
         {                                     // loop until no more idents
             scan->get_token();
+            if (scan->have(symbol::identifier)) // if theres an identifier it must be arith type
+            {
+                currHold = idTable->lookup(scan->this_token()); // lookup the current token
+                if (currHold == NULL)                           // if there isn't a match
+                {
+                    error->flag(scan->this_token(), 81);
+                }
+                else if (!currHold->tipe().is_type(lille_type::type_integer) && !currHold->tipe().is_type(lille_type::type_real))
+                {
+                    // if the variable passed to read isnt an integer or real number
+                    error->flag(scan->this_token(), 86); // throw int or real expected
+                }
+            }
             scan->must_be(symbol::identifier);
         }
 
@@ -855,25 +913,60 @@ bool parser::IS_STATEMENT() // we want the statement logic to pick up with check
 // return and check factor logic
 bool parser::IS_FACTOR()
 {
+    // some entry storage
+    id_table_entry *holdParent;
+    id_table_entry *childOne;
+    id_table_entry *childTwo;
+    bool addr, subr = false;
+    float rH;
+    int iH;
+    lille_type compType;
     if (debugging)
     {
         cout << "entering factor logic check" << endl;
     }
+    // as soon as the function is called get the entry
+    holdParent = currentHold;
+
     // **** FACTOR SECTION ****
     if (scan->have(symbol::plus_sym) || scan->have(symbol::minus_sym)) // if theres a preceding addop
     {
+        // if theres an adding sign we want to add
+        if (scan->have(symbol::plus_sym))
+        {
+            addr = true;
+        }
+        else
+        {
+            subr = true;
+        }
+
         scan->get_token(); // get next token
     }
     if (!IS_PRIMARY()) // theres must be a primary
     {
         return false;
     }
+    // after is primary there SHOULD be some sort of current_kind set
+    childOne = currentHold;
+
     if (scan->have(symbol::power_sym)) // check for <primary> ** <primary>
     {
         scan->get_token();
         if (!IS_PRIMARY()) // if it isnt followed by a primary then exit
         {
             return false;
+        }
+        // get the returned entry and type check then preform operation
+        childTwo = currentHold;
+        /*
+            DONT WORRY ABOUT TYPE COMPAT CHECKING BETWEEN OLD HOLDER AND NEW
+            LET THE CALLING FUNCTION WORRY ABOUT THE COMPATIBILITY
+        */
+        if (childOne->tipe().is_type(lille_type::type_real)) // if the first primary is a real than the expression evaluates to a real
+        {
+            // do the actual operation
+            rH = pow(childOne->real_value(), childTwo->integer_value());
         }
     }
     if (debugging)
@@ -886,6 +979,10 @@ bool parser::IS_FACTOR()
 // retrun and check term logic
 bool parser::IS_TERM()
 {
+    // some entry storage
+    id_table_entry *holdOne;
+    id_table_entry *holdTwo;
+
     if (debugging)
     {
         cout << "entering term logic" << endl;
@@ -916,6 +1013,8 @@ bool parser::IS_TERM()
 // expr 2 checking logic
 bool parser::IS_EXPR2()
 {
+    id_table_entry *holdOne;
+    id_table_entry *holdTwo;
 
     if (debugging)
     {
@@ -925,6 +1024,7 @@ bool parser::IS_EXPR2()
     {
         return false;
     }
+
     // if theres multiple
     while (scan->have(symbol::plus_sym) || scan->have(symbol::minus_sym) || scan->have(symbol::or_sym))
     {
@@ -983,6 +1083,16 @@ bool parser::IS_PRIMARY()
     }
     else if (scan->have(symbol::identifier)) // if theres an identifier
     {
+        currentHold = idTable->lookup(scan->this_token()); // look in the id table
+        if (currentHold == NULL)                           // if the search doesn't resolve
+        {
+            error->flag(scan->this_token(), 81);
+        }
+        // put the type into the type array
+        type_hold = currentHold->tipe();
+        // current_type = currentHold->tipe(); // store the type and kind in current vars
+        current_kind = currentHold->kind();
+
         scan->get_token();
         if (scan->have(symbol::left_paren_sym)) // if thers an expression list
         {

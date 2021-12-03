@@ -265,7 +265,7 @@ void scanner::get_char()
 char scanner::following_char()
 {
 	// return the character after next_char;
-	//if (pos_on_line < (input_buffer.length()-1))
+	// if (pos_on_line < (input_buffer.length()-1))
 	if ((!eof_flag) and ((pos_on_line + 1) < input_buffer.length()))
 		return input_buffer.at(pos_on_line + 1);
 	else
@@ -304,7 +304,7 @@ void scanner::fill_buffer()
 token *scanner::get_token()
 // Get the current token from the input stream. It is held in the private variable current_token.
 {
-	//skip whitespace and comments to find start of next token.
+	// skip whitespace and comments to find start of next token.
 	while ((!eof_flag) and ((next_char <= ' ') or ((next_char == '-') and (following_char() == '-'))))
 	{
 		// skip whitespace
@@ -395,9 +395,9 @@ void scanner::scan_string()
 	// OR DO I JUST THROW IT AWAY? WHAT TO DO
 	// DO COOL COMPILERS IGNORE YOUR MINOR ERRORS?
 
-	//bool str_error {false}; // if there is a error scanning the string
+	// bool str_error {false}; // if there is a error scanning the string
 	current_string_value = ""; // making sure that the string starts empty
-	//bool eoln_flag will need to be checked
+	// bool eoln_flag will need to be checked
 	bool x{true}; // loop escape flag
 	get_char();	  // get char at first assuming its " we dont need to add to string val
 	while (x && eoln_flag == false)
@@ -550,6 +550,7 @@ void scanner::scan_digit()
 	bool realf{false}; // only a real number after a single decimal has been detected
 	bool eflag{false}; // flag to deal with E form
 	bool negex{false}; // var to hold if the
+	bool range = false;
 	int ctoi = 0;
 	float baseHold = 0.0; // var to hold the base of exponential notation
 	int co = 1;			  // count how many number are trailing decimal in real number
@@ -578,8 +579,12 @@ void scanner::scan_digit()
 		if (isdigit(next_char) == false)
 		{ // if the following digit isn't a number
 			if (next_char == '.' && (eflag == false))
-			{ // if there is a decimal
-				if (isdigit(following_char()) && realf == false)
+			{								 // if there is a decimal
+				if (following_char() == '.') // if it is a range symbol
+				{
+					lcv = false;
+				}
+				else if (isdigit(following_char()) && realf == false)
 				{
 					// if the following digit is a digit and
 					// if the number isn't real already (avoids 11.55.34 being valid)
@@ -658,6 +663,10 @@ void scanner::scan_digit()
 			}
 		}
 		current_symbol = new symbol(symbol::real_num);
+	}
+	else if (range)
+	{
+		current_symbol = new symbol(symbol::range_sym);
 	}
 	else
 	{ // if its an int make the current symbol an integer
