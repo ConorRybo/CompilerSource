@@ -21,7 +21,7 @@ using namespace std;
 class parser
 {
 private:
-    bool debugging{false};
+    bool debugging{true};
     bool simple;
     // bool gdug;
     scanner *scan;
@@ -29,11 +29,6 @@ private:
     id_table *idTable;
     string ident_name;
     id_table_entry *currentHold;
-    vector<id_table_entry *> ent_hold;
-    vector<lille_type> typeHolder;
-    lille_type current_type;
-    lille_kind current_kind;
-    lille_type type_hold;
 
     void PROG();
     void BLOCK(string bName);

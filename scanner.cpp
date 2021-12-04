@@ -550,7 +550,6 @@ void scanner::scan_digit()
 	bool realf{false}; // only a real number after a single decimal has been detected
 	bool eflag{false}; // flag to deal with E form
 	bool negex{false}; // var to hold if the
-	bool range = false;
 	int ctoi = 0;
 	float baseHold = 0.0; // var to hold the base of exponential notation
 	int co = 1;			  // count how many number are trailing decimal in real number
@@ -583,6 +582,7 @@ void scanner::scan_digit()
 				if (following_char() == '.') // if it is a range symbol
 				{
 					lcv = false;
+					// get_char();
 				}
 				else if (isdigit(following_char()) && realf == false)
 				{
@@ -663,10 +663,6 @@ void scanner::scan_digit()
 			}
 		}
 		current_symbol = new symbol(symbol::real_num);
-	}
-	else if (range)
-	{
-		current_symbol = new symbol(symbol::range_sym);
 	}
 	else
 	{ // if its an int make the current symbol an integer

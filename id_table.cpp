@@ -137,8 +137,9 @@ id_table_entry *id_table::lookup(string s)
 	lscop--;
 	while (result == NULL && lscop >= 0) // if and while there is nothing found
 	{
-		cout << lscop << endl;
+		// cout << lscop << endl;
 		result = search_tree(s, sym_table[lscop]);
+		lscop--;
 	}
 
 	if (result == NULL)
