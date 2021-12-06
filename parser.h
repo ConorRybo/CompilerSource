@@ -21,7 +21,7 @@ using namespace std;
 class parser
 {
 private:
-    bool debugging{true};
+    bool debugging{false};
     bool simple;
     // bool gdug;
     scanner *scan;
