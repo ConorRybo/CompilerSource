@@ -1374,6 +1374,15 @@ bool parser::IS_PRIMARY()
         scan->get_token();
         if (scan->have(symbol::left_paren_sym)) // if thers an expression list
         {
+            // NOTE THAT YOU CAN CALL A FUNCTION AS A PARAMETER TO ANOTHER
+            // FUNC/PROC that is needing to take a paremeter
+            // need to check and make sure that they are a procedure or type
+            if (!currentHold->tipe().is_type(lille_type::type_proc) || !currentHold->tipe().is_type(lille_type::type_func))
+            {
+                // need to implement some sort of check to see if it needs to be a function
+                // call based on if it is part of an expression
+                error->flag(currentHold->token_value(), 121); // function call expected
+            }
             tempHold = currentHold; // when is expression gets called it will modify current hold
             scan->get_token();
             if (!IS_EXPRESSION()) // needs to be followed by an expression or list of expressions

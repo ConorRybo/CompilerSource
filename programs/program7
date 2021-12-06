@@ -1,8 +1,8 @@
 program prog7 is
-    i: integer;
+    i: string;
 
 begin
-    i := 15;
+    i := 5;
     writeln "Before the first for loop, i = " & int2string(i);
 	writeln "In ascending order: ";
 	for i in 1..5
