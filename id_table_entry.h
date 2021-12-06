@@ -50,7 +50,7 @@ public:
                    float real_value = 0,
                    string string_value = "",
                    bool bool_value = false); // fixes the value of a constant after entry
-    void add_param(id_table_entry *param_entry);
+    void add_param(id_table_entry *param_entry); // adds a parameter entry to the calling idtable entry
     void fix_return_type(lille_type new_ret);
     int number_of_params();
     // if there is an identifier list then we
@@ -58,5 +58,6 @@ public:
     void fix_type(lille_type ident_type);
     void fix_kind(lille_kind ident_kind);
     string to_string();
+    id_table_entry *nth_parameter(int n); // will look for the nth parameter that is required for 
 };
 #endif

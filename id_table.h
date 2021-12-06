@@ -38,7 +38,6 @@ private:
     node *insert(id_table_entry *idt_entry, node *p); // insert in tree starting with node p
     // void add_table_entry(id_table_entry *idt_entry, node *p); // method to add an entry to the tree
     void dump_tree(node *ptr); // method to dump all the contents of the tree? null out all the nodes??
-
 public:
     id_table(error_handler *err);
     void enter_new_scope();                          // called when we are entering a new region of scope

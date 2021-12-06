@@ -87,6 +87,26 @@ int id_table_entry::number_of_params()
     return n_par_entry;
 }
 
+// assume that we are indexing the parameters starting with 1
+id_table_entry *id_table_entry::nth_parameter(int n){
+    id_table_entry *temp1;
+    if(n <= n_par_entry) // make sure that the parameter that we are searching for will exist
+    {
+        temp1 = this->p_list_entry; // get the current entry parameter info (place: 1)
+        // loop until the n parameter
+        for(int x=2; x<=n; x++) // if n > 1 then keep going until n is satisfied
+        {
+            temp1 = temp1->p_list_entry; // get the entry that is pointed to
+        }
+
+        return temp1;
+    }
+    else{
+        throw lille_exception("Compiler error - Trying to access parameters that don't exist");
+        return NULL;
+    }
+}
+
 void id_table_entry::fix_const(int integer_value,
                                float real_value,
                                string string_value,
