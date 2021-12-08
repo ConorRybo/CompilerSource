@@ -1290,7 +1290,7 @@ bool parser::IS_SIMPEX()
     if (!IS_EXPR2()) // must start with an expression
     {
         return false;
-    }   
+    }
 
     // if theres a list of expr2 & expr2
     while (scan->have(symbol::ampersand_sym))
@@ -1313,7 +1313,7 @@ bool parser::IS_PRIMARY()
     id_table_entry *tempHold;
     lille_type *idType;
     int parCount = 1;
-    token *tempTok;    
+    token *tempTok;
 
     if (debugging)
     {
@@ -1370,30 +1370,30 @@ bool parser::IS_PRIMARY()
         currentHold = idTable->lookup(scan->this_token()); // look in the id table
         if (currentHold == NULL)                           // if the search doesn't resolve
         {
-            error->flag(scan->this_token(), 81); 
+            error->flag(scan->this_token(), 81);
             currentHold = idTable->enter_id(scan->this_token()); // add to the id table to avoid segmentation faults
         }
 
-        scan->get_token(); // get off the identifier token
+        scan->get_token();                      // get off the identifier token
         if (scan->have(symbol::left_paren_sym)) // if thers an expression list
         {
             // NOTE THAT YOU CAN CALL A FUNCTION AS A PARAMETER TO ANOTHER
             // FUNC/PROC that is needing to take a paremeter
             // need to check and make sure that they are a procedure or type
-            if (!currentHold->tipe().is_type(lille_type::type_proc) || !currentHold->tipe().is_type(lille_type::type_func))
+            if (!currentHold->tipe().is_type(lille_type::type_proc) && !currentHold->tipe().is_type(lille_type::type_func))
             {
                 // need to implement some sort of check to see if it needs to be a function
                 // call based on if it is part of an expression
                 error->flag(currentHold->token_value(), 121); // function call expected
             }
-                                    // temp hold should be holding the proc/fun id table entry
+            // temp hold should be holding the proc/fun id table entry
             tempHold = currentHold; // when is expression gets called it will modify current hold
 
             // get the next expression
             scan->get_token();
-            if(scan->have(symbol::right_paren_sym)) // we need to check for func() right?
+            if (scan->have(symbol::right_paren_sym)) // we need to check for func() right?
             {
-                if(tempHold->number_of_params() == 0) // if there are no parameters expected
+                if (tempHold->number_of_params() == 0) // if there are no parameters expected
                 {
                     return true;
                 }
@@ -1404,21 +1404,21 @@ bool parser::IS_PRIMARY()
                 }
             }
 
-            // if there are parameters than lets keep evaluating the validity of each 
+            // if there are parameters than lets keep evaluating the validity of each
             if (!IS_EXPRESSION()) // needs to be followed by an expression or list of expressions
             {
                 error->flag(scan->this_token(), 116); // throw expression exprected error
                 return false;
             }
-            // after currentHold is retured from this expression we need to type check the 
+            // after currentHold is retured from this expression we need to type check the
             // returned type to that of what we are expecting with the function/proc (should be the first param)
-            else if(!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
+            else if (!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
             {
                 error->flag(currentHold->token_value(), 98); // throw parameter types dont match error
                 return false;
-
             }
-            else{
+            else
+            {
                 parCount++;
             }
             while (scan->have(symbol::comma_sym)) // if theres multiple expressions
@@ -1429,26 +1429,26 @@ bool parser::IS_PRIMARY()
                     error->flag(scan->this_token(), 116); // throw expression exprected error
                     return false;
                 }
-                else if(!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
+                else if (!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
                 {
                     error->flag(currentHold->token_value(), 98); // throw parameter types dont match error
                     return false;
-
                 }
-                else{
+                else
+                {
                     parCount++;
                 }
             }
             if (scan->have(symbol::right_paren_sym)) // must close parenths
             {
                 // check to make sure that the correct number of parameters were supplied
-                if(parCount < tempHold->number_of_params())
+                if (parCount < tempHold->number_of_params())
                 {
                     error->flag(tempHold->token_value(), 97); // number of parameters dont match error
                     return false;
                 }
-                // construct id table entry to be sent back to parent with correct type 
-                tempTok = new token(); // create a null new token
+                // construct id table entry to be sent back to parent with correct type
+                tempTok = new token();                                              // create a null new token
                 currentHold = new id_table_entry(tempTok, tempHold->return_tipe()); // make current hold type the return type of the successful function
                 scan->get_token();
                 return true;
