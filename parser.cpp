@@ -901,6 +901,7 @@ void parser::WHILE_STATEMENT()
 bool parser::IS_EXPRESSION()
 {
     currentHold = NULL;
+    id_table_entry *tempHold; // just a temporary holder
     // function to check for expression
     if (debugging)
     {
@@ -1220,6 +1221,9 @@ bool parser::IS_TERM()
     // some entry storage
     id_table_entry *holdOne;
     id_table_entry *holdTwo;
+    id_table_entry *newHold;
+    token *newTok;
+    symbol *newSym;
 
     if (debugging)
     {
@@ -1230,14 +1234,85 @@ bool parser::IS_TERM()
     {
         return false;
     }
-
     // if multiple factors togther
     while (scan->have(symbol::asterisk_sym) || scan->have(symbol::slash_sym) || scan->have(symbol::and_sym))
     {
-        scan->get_token();
-        if (!IS_FACTOR()) // must be followed by a factor
+        holdOne = currentHold; // capture the first factor
+        if (scan->have(symbol::and_sym))
         {
-            return false;
+            scan->get_token(); // get off the and
+            // if theres an and symbol there must be a string
+            if (!holdOne->tipe().is_type(lille_type::type_string))
+            {
+                error->flag(holdOne->token_value(), 1); // throw string expected error
+                return false;
+            }
+            if (!IS_FACTOR()) // must be followed by a factor
+            {
+                return false;
+            }
+            // check and make sure a string type is returned
+            if (!currentHold->tipe().is_type(lille_type::type_string))
+            {
+                error->flag(currentHold->token_value(), 1); // throw string expected error
+                return false;
+            }
+            newTok = new token();
+            // create a new current hold with the current value of the term
+            currentHold = new id_table_entry(newTok, lille_type::type_string);
+        }
+        else // if its a mult or a div symbol
+        {
+            // if its an integer than we need to check and see if the followup is an int
+            if (holdOne->tipe().is_type(lille_type::type_integer))
+            {
+                scan->get_token(); // get off the multop
+                if (!IS_FACTOR())  // must be followed by a factor
+                {
+                    return false;
+                }
+                // type check the factor to see what we are returning
+                // if its a int currentHold will need to be made an int
+                if (currentHold->tipe().is_type(lille_type::type_integer))
+                {
+                    newTok = new token();
+                    currentHold = new id_table_entry(newTok, lille_type::type_integer); // gonna return an int type
+                }
+                // if its a real change currentHold to real
+                else if (currentHold->tipe().is_type(lille_type::type_real))
+                {
+                    newTok = new token();
+                    currentHold = new id_table_entry(newTok, lille_type::type_real); // gonna return an real type
+                }
+                // throw an error bc we are expecting int or real
+                else
+                {
+                    error->flag(currentHold->token_value(), 118); // int or real expression expected
+                    return false;
+                }
+            }
+            // if its a real we return a real regardless so its easy
+            else if (holdOne->tipe().is_type(lille_type::type_real))
+            {
+                scan->get_token();
+                if (!IS_FACTOR()) // must be followed by a factor
+                {
+                    return false;
+                }
+                // must be followed by either an int or a real
+                if (!currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_integer))
+                {
+                    error->flag(currentHold->token_value(), 118); // int or real expression expected
+                    return false;
+                }
+                newTok = new token();
+                currentHold = new id_table_entry(newTok, lille_type::type_real); // gonna result in a real either way
+            }
+            else
+            {
+                scan->get_token(); // get off the spec char
+                error->flag(holdOne->token_value(), 118);
+            }
         }
     }
     if (debugging)
@@ -1283,6 +1358,8 @@ bool parser::IS_EXPR2()
 // simple expression logic
 bool parser::IS_SIMPEX()
 {
+    id_table_entry *tempHold;
+
     if (debugging)
     {
         cout << "entering simpex logic" << endl;
@@ -1295,12 +1372,28 @@ bool parser::IS_SIMPEX()
     // if theres a list of expr2 & expr2
     while (scan->have(symbol::ampersand_sym))
     {
+
+        tempHold = currentHold; // get the value of the first simple expression
+        // if we are gonna use the string op then there must be strings
         scan->get_token(); // get off & symbol
-        if (!IS_EXPR2())   // must be followed by expression
+        if (!tempHold->tipe().is_type(lille_type::type_string))
+        {
+            error->flag(tempHold->token_value(), 115); // both expressions must be strings
+            return false;
+        }
+
+        if (!IS_EXPR2()) // must be followed by expression
         {
             return false;
         }
+        // must be followed by a string
+        if (!currentHold->tipe().is_type(lille_type::type_string))
+        {
+            error->flag(currentHold->token_value(), 115); // both expressions must be strings
+            return false;
+        }
     }
+
     if (debugging)
     {
         cout << "exiting simpex logic" << endl;
