@@ -869,8 +869,18 @@ void scanner::must_be(symbol::symbol_type s)
 {
 	if (current_token->get_sym() == s)
 		get_token();
-	else
+	else // second error recovery scheme
+	{
 		error->flag(current_token, error_message(s));
+		while ((current_token->get_sym() != s) && (current_token->get_sym() != symbol::semicolon_sym || current_token->get_sym() != symbol::end_of_program || current_token->get_sym() != symbol::eof_sym) && eoln_flag != true)
+		{
+			get_token();
+		}
+		if (current_token->get_sym() == s)
+		{
+			get_token();
+		}
+	}
 }
 
 token *scanner::this_token()

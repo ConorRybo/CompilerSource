@@ -202,6 +202,7 @@ void error_handler::initialize_error_messages()
 	error_message[122] = "Formal and actual parameter types do not match.";
 	error_message[123] = "Functions can only have value parameters.";
 	error_message[124] = "Primary epxected.";
+	error_message[125] = "Integer, real, or boolean expression expected.";
 }
 
 void error_handler::add_error_to_list(int line, int pos, int err)

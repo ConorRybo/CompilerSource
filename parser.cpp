@@ -549,8 +549,10 @@ void parser::SIMPLE_STATEMENT()
     bool par = false;  // parenth checking
     bool expr = true;  // used to control entry into expression logic
     bool exWhen = false;
-    vector<id_table_entry *> identList;
+    bool wr = false;
+    bool ret = true;
     id_table_entry *locHold; // just a spot to hold a table entry
+    id_table_entry *wrHold;
     if (debugging)
     {
         cout << "entering simple statement logic" << endl;
@@ -677,11 +679,13 @@ void parser::SIMPLE_STATEMENT()
             { // if theres a semicolon we know no expression
                 expr = false;
             }
+            ret = true;
             sing = true;
         }
         else if (scan->have(symbol::write_sym))
         {
             scan->get_token();
+            wr = true;
             if (scan->have(symbol::left_paren_sym))
             {
                 par = true;
@@ -691,6 +695,7 @@ void parser::SIMPLE_STATEMENT()
         else if (scan->have(symbol::writeln_sym)) // keep track of parents
         {
             scan->get_token();
+            wr = true;
             if (scan->have(symbol::left_paren_sym))
             {
                 scan->get_token();
@@ -699,10 +704,14 @@ void parser::SIMPLE_STATEMENT()
                     expr = false;
                     scan->get_token();
                 }
-                par = true;
+                else
+                {
+                    par = true;
+                }
             }
-            if (scan->have(symbol::semicolon_sym))
+            else if (scan->have(symbol::semicolon_sym))
             {
+                wr = false;
                 expr = false;
             }
         }
@@ -712,6 +721,20 @@ void parser::SIMPLE_STATEMENT()
             if (!IS_EXPRESSION()) // if there is not a simple expression
             {
                 error->flag(scan->this_token(), 83);
+            }
+            if (wr) // if its a write or a writeline then we know must be followed by an int or string or real
+            {
+                if (!currentHold->tipe().is_type(lille_type::type_integer) && !currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_string))
+                {
+                    error->flag(currentHold->token_value(), 84);
+                }
+            }
+            else if (ret)
+            {
+                if (!currentHold->tipe().is_type(lille_type::type_boolean) && !currentHold->tipe().is_type(lille_type::type_integer) && !currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_string))
+                {
+                    error->flag(currentHold->token_value(), 96); // int real string or bool expected
+                }
             }
             // from this point currentHold should have some sort of val we need to compare
             // currentHold is populated
@@ -723,7 +746,7 @@ void parser::SIMPLE_STATEMENT()
                     error->flag(currentHold->token_value(), 103);
                 }
             }
-            if (sing && !exWhen) // if there is an assignment or the becomes symbol
+            if (sing && !exWhen && !ret) // if there is an assignment or the becomes symbol
             {
                 // if the identifier is a real
                 if (locHold->tipe().is_type(lille_type::type_real))
@@ -738,7 +761,7 @@ void parser::SIMPLE_STATEMENT()
                         locHold->fix_const(0, currentHold->real_value());
                     }
                 }
-                // if the identifier is a
+                // if the identifier is an int
                 else if (locHold->tipe().is_type(lille_type::type_integer))
                 {
                     if (!currentHold->tipe().is_type(lille_type::type_integer))
@@ -751,7 +774,7 @@ void parser::SIMPLE_STATEMENT()
                 {
                     if (!currentHold->tipe().is_type(lille_type::type_string))
                     {
-                        error->flag(currentHold->token_value(), 103); // string is expected error
+                        error->flag(currentHold->token_value(), 1); // string is expected error
                     }
                 }
             }
@@ -761,6 +784,21 @@ void parser::SIMPLE_STATEMENT()
                 if (!IS_EXPRESSION()) // if there is not a simple expression
                 {
                     error->flag(scan->this_token(), 83);
+                }
+                if (wr)
+                {
+                    // if its a write or a writeline then we know must be followed by an int or string or real
+                    if (!currentHold->tipe().is_type(lille_type::type_integer) && !currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_string))
+                    {
+                        error->flag(currentHold->token_value(), 84);
+                    }
+                }
+                else if (ret)
+                {
+                    if (!currentHold->tipe().is_type(lille_type::type_boolean) && !currentHold->tipe().is_type(lille_type::type_integer) && !currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_string))
+                    {
+                        error->flag(currentHold->token_value(), 96); // int real string or bool expected
+                    }
                 }
                 if (exWhen)
                 {
@@ -811,6 +849,10 @@ void parser::IF_STATEMENT()
     {
         error->flag(scan->this_token(), 103);
     }
+    if (!currentHold->tipe().is_type(lille_type::type_boolean))
+    {
+        error->flag(currentHold->token_value(), 103); // boolean expression expected
+    }
     scan->must_be(symbol::then_sym); // must be a then symbol
     STATEMENT_LIST();
     while (scan->have(symbol::elsif_sym)) // can be multiple elsif statemets
@@ -819,6 +861,11 @@ void parser::IF_STATEMENT()
         if (!IS_EXPRESSION()) // must have expression
         {
             error->flag(scan->this_token(), 103);
+        }
+        // must be followed by a boolean expression
+        if (!currentHold->tipe().is_type(lille_type::type_boolean))
+        {
+            error->flag(currentHold->token_value(), 103); // boolean expression expected
         }
         scan->must_be(symbol::then_sym);
         STATEMENT_LIST();
@@ -852,7 +899,7 @@ void parser::FOR_STATEMENT()
     scan->get_token();
     if (scan->have(symbol::identifier))
     {
-        idTable->enter_id(scan->this_token());
+        idTable->enter_id(scan->this_token(), lille_type::type_integer, lille_kind::variable);
     }
     scan->must_be(symbol::identifier);
     scan->must_be(symbol::in_sym);
@@ -895,6 +942,10 @@ void parser::WHILE_STATEMENT()
     {
         error->flag(scan->this_token(), 103);
     }
+    if (!currentHold->tipe().is_type(lille_type::type_boolean))
+    {
+        error->flag(currentHold->token_value(), 103); // boolean expression expected
+    }
     LOOP_STATEMENT();
 }
 
@@ -902,6 +953,8 @@ bool parser::IS_EXPRESSION()
 {
     currentHold = NULL;
     id_table_entry *tempHold; // just a temporary holder
+    id_table_entry *tempTwo;  // secondary holder
+    token *newTok;            // token used to create new entry
     // function to check for expression
     if (debugging)
     {
@@ -929,6 +982,7 @@ bool parser::IS_EXPRESSION()
         {
             return false;
         }
+        tempHold = currentHold; // get the current hold
         // check for relational operators
         if (scan->have(symbol::greater_than_sym) || scan->have(symbol::less_than_sym) || scan->have(symbol::equals_sym) || scan->have(symbol::not_equals_sym) || scan->have(symbol::less_or_equal_sym) || scan->have(symbol::greater_or_equal_sym))
         {
@@ -937,18 +991,67 @@ bool parser::IS_EXPRESSION()
             {
                 return false;
             }
+            // if its a bool starting must be followed by a boolean
+            if (tempHold->tipe().is_type(lille_type::type_boolean))
+            {
+                if (!currentHold->tipe().is_type(lille_type::type_boolean))
+                {
+                    error->flag(currentHold->token_value(), 120);
+                    return false;
+                }
+            }
+            // if its an int or real must be on both sides
+            else if (tempHold->tipe().is_type(lille_type::type_integer) || tempHold->tipe().is_type(lille_type::type_real))
+            {
+                if (!currentHold->tipe().is_type(lille_type::type_real) && !currentHold->tipe().is_type(lille_type::type_integer))
+                {
+                    error->flag(currentHold->token_value(), 118); // integer or real expression expected
+                    return false;
+                }
+            }
+            // needs to start with either a bool, int, or real
+            else
+            {
+                error->flag(tempHold->token_value(), 125); // int real or bool expected
+                return false;
+            }
+            newTok = new token();
+            currentHold = new id_table_entry(newTok, lille_type::type_boolean);
         }
         else if (scan->have(symbol::in_sym)) // if theres an in <range>
         {
+            // all the parts of this must be ints
             scan->get_token(); // get off in
             if (!IS_SIMPEX())  // must be followed by a simple expression
             {
                 return false;
             }
+            tempTwo = currentHold;            // get the resulted entry
             scan->must_be(symbol::range_sym); // must be range symbol
             if (!IS_SIMPEX())
             {
                 return false;
+            }
+            // first part must be an int
+            if (!tempHold->tipe().is_type(lille_type::type_integer))
+            {
+                error->flag(tempHold->token_value(), 119);
+                return false;
+            }
+            else if (!tempTwo->tipe().is_type(lille_type::type_integer))
+            {
+                error->flag(tempTwo->token_value(), 119);
+                return false;
+            }
+            else if (!currentHold->tipe().is_type(lille_type::type_integer))
+            {
+                error->flag(currentHold->token_value(), 119);
+                return false;
+            }
+            else
+            {
+                newTok = new token();
+                currentHold = new id_table_entry(newTok, lille_type::type_boolean);
             }
         }
 
@@ -957,10 +1060,9 @@ bool parser::IS_EXPRESSION()
             cout << "exiting expression" << endl;
         }
 
+        simple = false; // reset value at end of each time
         return true;
     }
-
-    simple = false; // reset value at end of each time
 }
 
 // very important not to advance any tokens
@@ -1328,6 +1430,7 @@ bool parser::IS_EXPR2()
 {
     id_table_entry *holdOne;
     id_table_entry *holdTwo;
+    bool orSym = false;
 
     if (debugging)
     {
@@ -1337,10 +1440,10 @@ bool parser::IS_EXPR2()
     {
         return false;
     }
-
     // if theres multiple
     while (scan->have(symbol::plus_sym) || scan->have(symbol::minus_sym) || scan->have(symbol::or_sym))
     {
+        holdOne = currentHold; // get the returned entry
         // scan->get_token();
         if (!IS_TERM()) // must start with a terms
         {
@@ -1508,7 +1611,7 @@ bool parser::IS_PRIMARY()
             else if (!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
             {
                 error->flag(currentHold->token_value(), 98); // throw parameter types dont match error
-                return false;
+                // return false;
             }
             else
             {
@@ -1520,12 +1623,12 @@ bool parser::IS_PRIMARY()
                 if (!IS_EXPRESSION()) // needs to be followed by an expression or list of expressions
                 {
                     error->flag(scan->this_token(), 116); // throw expression exprected error
-                    return false;
+                    // return false;
                 }
                 else if (!currentHold->tipe().is_type(tempHold->nth_parameter(parCount)->tipe())) // if there isn't a match
                 {
                     error->flag(currentHold->token_value(), 98); // throw parameter types dont match error
-                    return false;
+                    // return false;
                 }
                 else
                 {
